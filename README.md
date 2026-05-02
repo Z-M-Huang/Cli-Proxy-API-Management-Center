@@ -4,8 +4,10 @@ A single-file Web UI (React + TypeScript) for operating and troubleshooting the 
 
 [中文文档](README_CN.md)
 
-**Main Project**: https://github.com/router-for-me/CLIProxyAPI  
-**Example URL**: https://remote.router-for.me/  
+> **Fork notice.** This is [Z-M-Huang's](https://github.com/Z-M-Huang) fork of [router-for-me/Cli-Proxy-API-Management-Center](https://github.com/router-for-me/Cli-Proxy-API-Management-Center). It carries the management UI for the fork's extra features (currently: **Prompt Rules**). Used by the matching fork at [Z-M-Huang/CLIProxyAPI](https://github.com/Z-M-Huang/CLIProxyAPI). Upstream improvements are merged in periodically.
+
+**Main Project**: https://github.com/Z-M-Huang/CLIProxyAPI  
+**Upstream**: https://github.com/router-for-me/CLIProxyAPI  
 **Minimum Required Version**: ≥ 6.8.0 (recommended ≥ 6.8.15)
 
 Since version 6.0.19, the Web UI ships with the main program; access it via `/management.html` on the API port once the service is running.

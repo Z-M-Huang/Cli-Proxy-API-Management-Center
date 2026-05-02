@@ -4,8 +4,10 @@
 
 [English](README.md)
 
-**主项目**: https://github.com/router-for-me/CLIProxyAPI  
-**示例地址**: https://remote.router-for.me/  
+> **分叉说明。** 本仓库是 [Z-M-Huang](https://github.com/Z-M-Huang) 维护的 [router-for-me/Cli-Proxy-API-Management-Center](https://github.com/router-for-me/Cli-Proxy-API-Management-Center) 分叉，承载本分叉新增功能的管理 UI（当前：**提示规则**），与 [Z-M-Huang/CLIProxyAPI](https://github.com/Z-M-Huang/CLIProxyAPI) 配套使用。会定期合并上游改进。
+
+**主项目**: https://github.com/Z-M-Huang/CLIProxyAPI  
+**上游**: https://github.com/router-for-me/CLIProxyAPI  
 **最低版本要求**: ≥ 6.8.0（推荐 ≥ 6.8.15）
 
 从6.0.19版本开始，Web UI 随主程序一起提供；服务运行后，通过 API 端口上的"/management.html"访问它。
