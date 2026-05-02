@@ -4,8 +4,10 @@ A single-file Web UI (React + TypeScript) for operating and troubleshooting the 
 
 [中文文档](README_CN.md)
 
-**Main Project**: https://github.com/router-for-me/CLIProxyAPI  
-**Example URL**: https://remote.router-for.me/  
+> **Fork notice.** This is [Z-M-Huang's](https://github.com/Z-M-Huang) fork of [router-for-me/Cli-Proxy-API-Management-Center](https://github.com/router-for-me/Cli-Proxy-API-Management-Center). It carries the management UI for the fork's extra features (currently: **Prompt Rules**; revived logging UI planned for v0.2.0). Paired with the matching backend fork at [Z-M-Huang/CLIProxyAPI](https://github.com/Z-M-Huang/CLIProxyAPI), which republishes the docker image at `zhironghuang/cli-proxy-api`. Upstream improvements are merged in periodically.
+
+**Main Project**: https://github.com/Z-M-Huang/CLIProxyAPI  
+**Upstream**: https://github.com/router-for-me/CLIProxyAPI  
 **Minimum Required Version**: ≥ 6.8.0 (recommended ≥ 6.8.15)
 
 Since version 6.0.19, the Web UI ships with the main program; access it via `/management.html` on the API port once the service is running.
@@ -119,7 +121,7 @@ The UI language is automatically detected from browser settings and can be manua
 ## Build & release notes
 
 - Vite produces a **single HTML** output (`dist/index.html`) with all assets inlined (via `vite-plugin-singlefile`).
-- Tagging `vX.Y.Z` triggers `.github/workflows/release.yml` to publish `dist/management.html`.
+- Tagging `zmh-vX.Y.Z` triggers `.github/workflows/release.yml` to publish `dist/management.html`. The `zmh-v` prefix avoids the upstream tag namespace.
 - The UI version shown in the footer is injected at build time (env `VERSION`, git tag, or `package.json` fallback).
 
 ## Security notes
