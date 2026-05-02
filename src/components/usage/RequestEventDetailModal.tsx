@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
@@ -220,30 +220,39 @@ export function RequestEventDetailModal({ requestId, onClose }: RequestEventDeta
   const [missing, setMissing] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
+  const fetchSeqRef = useRef(0);
+
   const loadLog = useCallback(async (id: string) => {
+    const seq = ++fetchSeqRef.current;
     setLoading(true);
     setErrorMessage(null);
     setMissing(false);
     setText('');
     try {
       const data = await logsApi.fetchRequestLogText(id);
+      if (fetchSeqRef.current !== seq) return;
       setText(data ?? '');
     } catch (err) {
+      if (fetchSeqRef.current !== seq) return;
       if (extractErrorStatus(err) === 404) {
         setMissing(true);
       } else {
         setErrorMessage(extractErrorMessage(err));
       }
     } finally {
-      setLoading(false);
+      if (fetchSeqRef.current === seq) {
+        setLoading(false);
+      }
     }
   }, []);
 
   useEffect(() => {
     if (!requestId) {
+      fetchSeqRef.current++;
       setText('');
       setErrorMessage(null);
       setMissing(false);
+      setLoading(false);
       return;
     }
     void loadLog(requestId);
@@ -343,7 +352,7 @@ export function RequestEventDetailModal({ requestId, onClose }: RequestEventDeta
           <Button
             variant="secondary"
             onClick={handleDownload}
-            disabled={!requestId || downloading}
+            disabled={!requestId || downloading || missing || loading}
             loading={downloading}
           >
             {t('usage_stats.event_detail.download_raw')}
