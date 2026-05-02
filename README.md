@@ -105,10 +105,11 @@ See `api.md` for the full authentication rules, server-side limits, and edge cas
 
 ## Internationalization
 
-Currently supports three languages:
+Currently supports four languages:
 
 - English (en)
 - Simplified Chinese (zh-CN)
+- Traditional Chinese (zh-TW)
 - Russian (ru)
 
 The UI language is automatically detected from browser settings and can be manually switched at the bottom of the page.
@@ -151,11 +152,7 @@ npm run type-check # tsc --noEmit
 
 ## Contributing
 
-Issues and PRs are welcome. Please include:
-
-- Reproduction steps (server version + UI version)
-- Screenshots for UI changes
-- Verification notes (`npm run lint`, `npm run type-check`)
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the fork-specific branch model, upstream-sync workflow, customization surface, and release process. PRs land in this repo's `dev` branch (not upstream); please include reproduction steps (backend version + UI version), screenshots for UI changes, and verification notes (`npm run lint`, `npm run type-check`, `npm run build`).
 
 ## License
 

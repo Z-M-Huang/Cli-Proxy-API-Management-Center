@@ -104,10 +104,11 @@ npm run build
 
 ## 多语言支持
 
-目前支持三种语言：
+目前支持四种语言：
 
 - 英文 (en)
 - 简体中文 (zh-CN)
+- 繁体中文 (zh-TW)
 - 俄文 (ru)
 
 界面语言会根据浏览器设置自动切换，也可在页面底部手动切换。
@@ -150,11 +151,7 @@ npm run type-check # tsc --noEmit
 
 ## 贡献
 
-欢迎提 Issue 与 PR。建议附上：
-
-- 复现步骤（服务端版本 + UI 版本）
-- UI 改动截图
-- 验证记录（`npm run lint`、`npm run type-check`）
+请参阅 [CONTRIBUTING.md](./CONTRIBUTING.md)，其中包含本分叉特定的分支模型、上游同步流程、定制范围和发布流程。PR 提交到本仓库的 `dev` 分支（不是上游）；请附上复现步骤（后端版本 + UI 版本）、UI 改动截图，以及验证记录（`npm run lint`、`npm run type-check`、`npm run build`）。
 
 ## 许可证
 
