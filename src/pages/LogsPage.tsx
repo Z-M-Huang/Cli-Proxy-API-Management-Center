@@ -21,6 +21,7 @@ import {
   IconX,
 } from '@/components/ui/icons';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
+import { isAbortError, usePoll } from '@/hooks/usePoll';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useAuthStore, useConfigStore, useNotificationStore } from '@/stores';
 import { logsApi } from '@/services/api/logs';
@@ -118,7 +119,7 @@ export function LogsPage() {
 
   const disableControls = connectionStatus !== 'connected';
 
-  const loadLogs = async (incremental = false) => {
+  const loadLogs = async (incremental = false, signal?: AbortSignal) => {
     if (connectionStatus !== 'connected') {
       setLoading(false);
       return;
@@ -148,7 +149,7 @@ export function LogsPage() {
 
       const params =
         incremental && latestTimestampRef.current > 0 ? { after: latestTimestampRef.current } : {};
-      const data = await logsApi.fetchLogs(params);
+      const data = await logsApi.fetchLogs(params, { signal });
 
       // 更新时间戳
       if (data['latest-timestamp']) {
@@ -180,6 +181,12 @@ export function LogsPage() {
         setLogState({ buffer, visibleFrom });
       }
     } catch (err: unknown) {
+      // Aborted polls are expected (hidden-tab / unmount); skip
+      // logging + error UI so they do not look like real failures
+      // (Codex Stage 1 exit round 2 FE-R2-5).
+      if (isAbortError(err)) {
+        return;
+      }
       console.error('Failed to load logs:', err);
       if (!incremental) {
         setError(getErrorMessage(err) || t('logs.load_error'));
@@ -280,16 +287,12 @@ export function LogsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, connectionStatus, requestLogEnabled]);
 
-  useEffect(() => {
-    if (!autoRefresh || connectionStatus !== 'connected') {
-      return;
-    }
-    const id = window.setInterval(() => {
-      loadLogs(true);
-    }, 8000);
-    return () => window.clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoRefresh, connectionStatus]);
+  usePoll(
+    (signal) => {
+      loadLogs(true, signal);
+    },
+    autoRefresh && connectionStatus === 'connected' ? 8000 : null
+  );
 
   const visibleLines = useMemo(
     () => logState.buffer.slice(logState.visibleFrom),
