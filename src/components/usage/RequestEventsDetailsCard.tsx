@@ -5,20 +5,18 @@ import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Select } from '@/components/ui/Select';
 import { authFilesApi } from '@/services/api/authFiles';
-import type { GeminiKeyConfig, ProviderKeyConfig, OpenAIProviderConfig } from '@/types';
 import type { AuthFileItem } from '@/types/authFile';
 import type { CredentialInfo } from '@/types/sourceInfo';
-import { buildSourceInfoMap, resolveSourceDisplay } from '@/utils/sourceResolver';
+import { resolveSourceDisplay, type SourceInfoMap } from '@/utils/sourceResolver';
 import { parseTimestampMs } from '@/utils/timestamp';
 import {
-  collectUsageDetails,
-  extractLatencyMs,
   extractTotalTokens,
   formatDurationMs,
   LATENCY_SOURCE_FIELD,
-  normalizeAuthIndex,
   type UsageThinking,
 } from '@/utils/usage';
+import { normalizeAuthIndex } from '@/utils/usage/identity';
+import type { UsageDetail } from '@/utils/usage/types';
 import { downloadBlob } from '@/utils/download';
 import styles from '@/pages/UsagePage.module.scss';
 import { RequestEventDetailModal } from './RequestEventDetailModal';
@@ -50,13 +48,9 @@ type RequestEventRow = {
 };
 
 export interface RequestEventsDetailsCardProps {
-  usage: unknown;
+  usageDetails: UsageDetail[];
   loading: boolean;
-  geminiKeys: GeminiKeyConfig[];
-  claudeConfigs: ProviderKeyConfig[];
-  codexConfigs: ProviderKeyConfig[];
-  vertexConfigs: ProviderKeyConfig[];
-  openaiProviders: OpenAIProviderConfig[];
+  sourceInfoMap: SourceInfoMap;
 }
 
 const toNumber = (value: unknown): number => {
@@ -104,13 +98,9 @@ const encodeCsv = (value: string | number): string => {
 };
 
 export function RequestEventsDetailsCard({
-  usage,
+  usageDetails,
   loading,
-  geminiKeys,
-  claudeConfigs,
-  codexConfigs,
-  vertexConfigs,
-  openaiProviders,
+  sourceInfoMap,
 }: RequestEventsDetailsCardProps) {
   const { t, i18n } = useTranslation();
   const latencyHint = t('usage_stats.latency_unit_hint', {
@@ -149,22 +139,8 @@ export function RequestEventsDetailsCard({
     };
   }, []);
 
-  const sourceInfoMap = useMemo(
-    () =>
-      buildSourceInfoMap({
-        geminiApiKeys: geminiKeys,
-        claudeApiKeys: claudeConfigs,
-        codexApiKeys: codexConfigs,
-        vertexApiKeys: vertexConfigs,
-        openaiCompatibility: openaiProviders,
-      }),
-    [claudeConfigs, codexConfigs, geminiKeys, openaiProviders, vertexConfigs]
-  );
-
   const rows = useMemo<RequestEventRow[]>(() => {
-    const details = collectUsageDetails(usage);
-
-    const baseRows = details.map((detail, index) => {
+    const baseRows = usageDetails.map((detail, index) => {
       const timestamp = detail.timestamp;
       const timestampMs =
         typeof detail.__timestampMs === 'number' && detail.__timestampMs > 0
@@ -193,7 +169,7 @@ export function RequestEventsDetailsCard({
         toNumber(detail.tokens?.total_tokens),
         extractTotalTokens(detail)
       );
-      const latencyMs = extractLatencyMs(detail);
+      const latencyMs = detail.latency_ms ?? null;
       const thinking = detail.thinking ?? null;
       const thinkingLabel = formatThinkingLabel(thinking);
 
@@ -255,7 +231,7 @@ export function RequestEventsDetailsCard({
         source: buildDisambiguatedSourceLabel(row),
       }))
       .sort((a, b) => b.timestampMs - a.timestampMs);
-  }, [authFileMap, i18n.language, sourceInfoMap, usage]);
+  }, [authFileMap, i18n.language, sourceInfoMap, usageDetails]);
 
   const hasLatencyData = useMemo(() => rows.some((row) => row.latencyMs !== null), [rows]);
 

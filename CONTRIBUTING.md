@@ -96,15 +96,9 @@ The release tag is `zmh-vX.Y.Z` (the `zmh-` prefix avoids colliding with upstrea
 - We don't carry upstream's affiliate/sponsor links in the rebrand commits.
 - We don't run `release.yml` on GitHub-hosted runners; it's pinned to `self-hosted`.
 
-## Code review gate (recommended for non-trivial changes)
+## Fork boundary guard
 
-For non-trivial PRs (new feature, refactor touching several files, anything in the customization surface), run a Codex CLI gpt-5.5 review before merging:
-
-```
-/dev-buddy-once Use the Codex CLI preset with gpt-5.5 to review the diff between origin/dev and feat/your-feature ...
-```
-
-Address every concrete finding before merging.
+`FORK_BOUNDARY.md` is the source of truth for fork-only files, patched upstream files, and the `/* FORK[topic]: reason */` marker convention.
 
 ## Pointers
 

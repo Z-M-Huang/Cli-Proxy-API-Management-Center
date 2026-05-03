@@ -1,7 +1,9 @@
 import { create } from 'zustand';
 import { usageApi } from '@/services/api';
 import { useAuthStore } from '@/stores/useAuthStore';
-import { collectUsageDetails, computeKeyStatsFromDetails, type KeyStats, type UsageDetail } from '@/utils/usage';
+import { collectUsageDetails } from '@/utils/usage/details';
+import { computeKeyStatsFromDetails } from '@/utils/usage/keyStats';
+import type { KeyStats, UsageDetail } from '@/utils/usage/types';
 import i18n from '@/i18n';
 
 export const USAGE_STATS_STALE_TIME_MS = 240_000;

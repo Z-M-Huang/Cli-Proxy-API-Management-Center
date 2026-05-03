@@ -1,5 +1,5 @@
-import type { UsageDetail } from '@/utils/usage';
-import { normalizeAuthIndex } from '@/utils/usage';
+import { normalizeAuthIndex } from '@/utils/usage/identity';
+import type { UsageDetail } from '@/utils/usage/types';
 
 export type UsageDetailsBySource = Map<string, UsageDetail[]>;
 export type UsageDetailsByAuthIndex = Map<string, UsageDetail[]>;

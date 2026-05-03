@@ -2,22 +2,18 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui/Card';
 import { authFilesApi } from '@/services/api/authFiles';
-import type { GeminiKeyConfig, OpenAIProviderConfig, ProviderKeyConfig } from '@/types';
 import type { AuthFileItem } from '@/types/authFile';
 import type { CredentialInfo } from '@/types/sourceInfo';
-import { buildSourceInfoMap, resolveSourceDisplay } from '@/utils/sourceResolver';
-import { collectUsageDetails, formatCompactNumber, normalizeAuthIndex } from '@/utils/usage';
-import type { UsagePayload } from './hooks/useUsageData';
+import { resolveSourceDisplay, type SourceInfoMap } from '@/utils/sourceResolver';
+import { normalizeAuthIndex } from '@/utils/usage/identity';
+import type { UsageDetail } from '@/utils/usage/types';
+import { formatCompactNumber } from '@/utils/usage';
 import styles from '@/pages/UsagePage.module.scss';
 
 export interface CredentialStatsCardProps {
-  usage: UsagePayload | null;
+  usageDetails: UsageDetail[];
   loading: boolean;
-  geminiKeys: GeminiKeyConfig[];
-  claudeConfigs: ProviderKeyConfig[];
-  codexConfigs: ProviderKeyConfig[];
-  vertexConfigs: ProviderKeyConfig[];
-  openaiProviders: OpenAIProviderConfig[];
+  sourceInfoMap: SourceInfoMap;
 }
 
 interface CredentialRow {
@@ -31,13 +27,9 @@ interface CredentialRow {
 }
 
 export function CredentialStatsCard({
-  usage,
+  usageDetails,
   loading,
-  geminiKeys,
-  claudeConfigs,
-  codexConfigs,
-  vertexConfigs,
-  openaiProviders,
+  sourceInfoMap,
 }: CredentialStatsCardProps) {
   const { t } = useTranslation();
   const [authFileMap, setAuthFileMap] = useState<Map<string, CredentialInfo>>(new Map());
@@ -72,24 +64,12 @@ export function CredentialStatsCard({
     };
   }, []);
 
-  const sourceInfoMap = useMemo(
-    () =>
-      buildSourceInfoMap({
-        geminiApiKeys: geminiKeys,
-        claudeApiKeys: claudeConfigs,
-        codexApiKeys: codexConfigs,
-        vertexApiKeys: vertexConfigs,
-        openaiCompatibility: openaiProviders,
-      }),
-    [claudeConfigs, codexConfigs, geminiKeys, openaiProviders, vertexConfigs]
-  );
-
   const rows = useMemo((): CredentialRow[] => {
-    if (!usage) return [];
+    if (!usageDetails.length) return [];
 
     const rowMap = new Map<string, CredentialRow>();
 
-    collectUsageDetails(usage).forEach((detail) => {
+    usageDetails.forEach((detail) => {
       const sourceInfo = resolveSourceDisplay(
         detail.source ?? '',
         detail.auth_index,
@@ -121,7 +101,7 @@ export function CredentialStatsCard({
     });
 
     return Array.from(rowMap.values()).sort((a, b) => b.total - a.total);
-  }, [authFileMap, sourceInfoMap, usage]);
+  }, [authFileMap, sourceInfoMap, usageDetails]);
 
   return (
     <Card title={t('usage_stats.credential_stats')} className={styles.detailsFixedCard}>

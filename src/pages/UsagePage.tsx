@@ -1,17 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Chart as ChartJS,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
 import { Button } from '@/components/ui/Button';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Select } from '@/components/ui/Select';
@@ -20,6 +8,13 @@ import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import { providersApi } from '@/services/api';
 import { useThemeStore, useConfigStore } from '@/stores';
 import type { OpenAIProviderConfig } from '@/types';
+import { buildSourceInfoMap } from '@/utils/sourceResolver';
+import {
+  collectUsageDetails,
+  filterUsageByTimeRange,
+  getModelNamesFromUsage,
+} from '@/utils/usage/details';
+import type { UsageTimeRange } from '@/utils/usage/types';
 import {
   StatCards,
   UsageChart,
@@ -36,27 +31,9 @@ import {
   useSparklines,
   useChartData,
 } from '@/components/usage';
-import {
-  getModelNamesFromUsage,
-  getApiStats,
-  getModelStats,
-  filterUsageByTimeRange,
-  type UsageTimeRange,
-} from '@/utils/usage';
+import { ensureUsageChartsRegistered } from '@/components/usage/chartRegistration';
+import { getApiStats, getModelStats } from '@/utils/usage';
 import styles from './UsagePage.module.scss';
-
-// Register Chart.js components
-ChartJS.register(
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
 
 const CHART_LINES_STORAGE_KEY = 'cli-proxy-usage-chart-lines-v1';
 const TIME_RANGE_STORAGE_KEY = 'cli-proxy-usage-time-range-v1';
@@ -120,6 +97,8 @@ const loadTimeRange = (): UsageTimeRange => {
 };
 
 export function UsagePage() {
+  ensureUsageChartsRegistered();
+
   const { t } = useTranslation();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const resolvedTheme = useThemeStore((state) => state.resolvedTheme);
@@ -175,10 +154,13 @@ export function UsagePage() {
   }, [openaiCompatibilityConfig]);
 
   const openaiProviderState = openaiProvidersWithAuthIndex;
-  const openaiProvidersForUsage =
-    openaiProviderState && openaiProviderState.source === openaiCompatibilityConfig
-      ? openaiProviderState.providers
-      : (openaiCompatibilityConfig ?? []);
+  const openaiProvidersForUsage = useMemo(
+    () =>
+      openaiProviderState && openaiProviderState.source === openaiCompatibilityConfig
+        ? openaiProviderState.providers
+        : (openaiCompatibilityConfig ?? []),
+    [openaiCompatibilityConfig, openaiProviderState]
+  );
 
   const timeRangeOptions = useMemo(
     () =>
@@ -192,6 +174,25 @@ export function UsagePage() {
   const filteredUsage = useMemo(
     () => (usage ? filterUsageByTimeRange(usage, timeRange) : null),
     [usage, timeRange]
+  );
+  const usageDetails = useMemo(() => collectUsageDetails(usage), [usage]);
+  const filteredUsageDetails = useMemo(() => collectUsageDetails(filteredUsage), [filteredUsage]);
+  const sourceInfoMap = useMemo(
+    () =>
+      buildSourceInfoMap({
+        geminiApiKeys: config?.geminiApiKeys || [],
+        claudeApiKeys: config?.claudeApiKeys || [],
+        codexApiKeys: config?.codexApiKeys || [],
+        vertexApiKeys: config?.vertexApiKeys || [],
+        openaiCompatibility: openaiProvidersForUsage,
+      }),
+    [
+      config?.claudeApiKeys,
+      config?.codexApiKeys,
+      config?.geminiApiKeys,
+      config?.vertexApiKeys,
+      openaiProvidersForUsage,
+    ]
   );
   const hourWindowHours = timeRange === 'all' ? undefined : HOUR_WINDOW_BY_TIME_RANGE[timeRange];
 
@@ -225,7 +226,7 @@ export function UsagePage() {
 
   // Sparklines hook
   const { requestsSparkline, tokensSparkline, rpmSparkline, tpmSparkline, costSparkline } =
-    useSparklines({ usage: filteredUsage, loading, nowMs });
+    useSparklines({ usage: filteredUsage, usageDetails: filteredUsageDetails, loading, nowMs });
 
   // Chart data hook
   const {
@@ -322,6 +323,7 @@ export function UsagePage() {
       {/* Stats Overview Cards */}
       <StatCards
         usage={filteredUsage}
+        usageDetails={filteredUsageDetails}
         loading={loading}
         modelPrices={modelPrices}
         nowMs={nowMs}
@@ -343,7 +345,7 @@ export function UsagePage() {
       />
 
       {/* Service Health */}
-      <ServiceHealthCard usage={usage} loading={loading} />
+      <ServiceHealthCard usageDetails={usageDetails} loading={loading} />
 
       {/* Charts Grid */}
       <div className={styles.chartsGrid}>
@@ -395,24 +397,16 @@ export function UsagePage() {
       </div>
 
       <RequestEventsDetailsCard
-        usage={filteredUsage}
+        usageDetails={filteredUsageDetails}
         loading={loading}
-        geminiKeys={config?.geminiApiKeys || []}
-        claudeConfigs={config?.claudeApiKeys || []}
-        codexConfigs={config?.codexApiKeys || []}
-        vertexConfigs={config?.vertexApiKeys || []}
-        openaiProviders={openaiProvidersForUsage}
+        sourceInfoMap={sourceInfoMap}
       />
 
       {/* Credential Stats */}
       <CredentialStatsCard
-        usage={filteredUsage}
+        usageDetails={filteredUsageDetails}
         loading={loading}
-        geminiKeys={config?.geminiApiKeys || []}
-        claudeConfigs={config?.claudeApiKeys || []}
-        codexConfigs={config?.codexApiKeys || []}
-        vertexConfigs={config?.vertexApiKeys || []}
-        openaiProviders={openaiProvidersForUsage}
+        sourceInfoMap={sourceInfoMap}
       />
 
       {/* Price Settings */}

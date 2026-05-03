@@ -1,4 +1,4 @@
-import type { StatusBarData, StatusBlockDetail, StatusBlockState } from '@/utils/usage';
+import type { StatusBarData, StatusBlockDetail, StatusBlockState } from '@/utils/usage/types';
 
 export type { StatusBarData, StatusBlockDetail, StatusBlockState };
 
