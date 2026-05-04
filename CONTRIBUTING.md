@@ -2,7 +2,7 @@
 
 This is a soft fork of [router-for-me/Cli-Proxy-API-Management-Center](https://github.com/router-for-me/Cli-Proxy-API-Management-Center) — the React/TypeScript management UI paired with the [Z-M-Huang/CLIProxyAPI](https://github.com/Z-M-Huang/CLIProxyAPI) backend fork. The fork carries its own UI features on top of upstream while continuing to absorb upstream improvements over time.
 
-If you're a human collaborator or an AI coding assistant, **read this before opening a branch or PR**. The same workflow is referenced by [`AGENTS.md`](./AGENTS.md) and [`CLAUDE.md`](./CLAUDE.md).
+If you're a human collaborator or an AI coding assistant, **read this before opening a branch or PR**. Shared assistant guidance lives in [`docs/ai-assistant-guidance.md`](./docs/ai-assistant-guidance.md), which is imported by [`AGENTS.md`](./AGENTS.md) and [`CLAUDE.md`](./CLAUDE.md).
 
 ## Goals
 
@@ -72,6 +72,7 @@ These are the files where the fork diverges from upstream. When syncing upstream
 - `src/services/api/promptRules.ts` — fork-only API client.
 - `src/router/MainRoutes.tsx`, `src/components/layout/MainLayout.tsx`, `src/services/api/index.ts` — minor fork-feature wiring.
 - `README.md`, `README_CN.md` — fork notice block at the top.
+- `AGENTS.md`, `CLAUDE.md`, `docs/ai-assistant-guidance.md` — shared assistant guidance and imports.
 
 If you intentionally add a new customization, also add the file here so future syncs know to expect a conflict there.
 
@@ -98,10 +99,10 @@ The release tag is `zmh-vX.Y.Z` (the `zmh-` prefix avoids colliding with upstrea
 
 ## Fork boundary guard
 
-`FORK_BOUNDARY.md` is the source of truth for fork-only files, patched upstream files, and the `/* FORK[topic]: reason */` marker convention.
+[`docs/ai-assistant-guidance.md`](./docs/ai-assistant-guidance.md) documents fork-only files, patched upstream files, and the `/* FORK[topic]: reason */` marker convention.
 
 ## Pointers
 
 - Plan / decision history: `/home/ubuntu/.claude/plans/we-are-in-a-nested-emerson.md` (local-only).
 - Upstream: <https://github.com/router-for-me/Cli-Proxy-API-Management-Center>.
-- Backend fork: <https://github.com/Z-M-Huang/CLIProxyAPI>.
+- Backend fork: <https://github.com/Z-M-Huang/CLIProxyAPI> (local sibling checkout: `../CLIProxyAPI`).
