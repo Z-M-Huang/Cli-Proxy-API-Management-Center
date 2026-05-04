@@ -16,10 +16,10 @@ import {
   formatDurationMs,
   formatPerMinuteValue,
   formatUsd,
-  collectUsageDetails,
-  extractTotalTokens,
   type ModelPrice,
 } from '@/utils/usage';
+import { extractTotalTokens } from '@/utils/usage/details';
+import type { UsageDetail } from '@/utils/usage/types';
 import { sparklineOptions } from '@/utils/usage/chartConfig';
 import type { UsagePayload } from './hooks/useUsageData';
 import type { SparklineBundle } from './hooks/useSparklines';
@@ -39,6 +39,7 @@ interface StatCardData {
 
 export interface StatCardsProps {
   usage: UsagePayload | null;
+  usageDetails: UsageDetail[];
   loading: boolean;
   modelPrices: Record<string, ModelPrice>;
   nowMs: number;
@@ -51,7 +52,14 @@ export interface StatCardsProps {
   };
 }
 
-export function StatCards({ usage, loading, modelPrices, nowMs, sparklines }: StatCardsProps) {
+export function StatCards({
+  usage,
+  usageDetails,
+  loading,
+  modelPrices,
+  nowMs,
+  sparklines,
+}: StatCardsProps) {
   const { t } = useTranslation();
   const latencyHint = t('usage_stats.latency_unit_hint', {
     field: LATENCY_SOURCE_FIELD,
@@ -73,10 +81,9 @@ export function StatCards({ usage, loading, modelPrices, nowMs, sparklines }: St
     };
 
     if (!usage) return empty;
-    const details = collectUsageDetails(usage);
-    if (!details.length) return empty;
+    if (!usageDetails.length) return empty;
 
-    const latencyStats = calculateLatencyStatsFromDetails(details);
+    const latencyStats = calculateLatencyStatsFromDetails(usageDetails);
 
     let cachedTokens = 0;
     let reasoningTokens = 0;
@@ -89,7 +96,7 @@ export function StatCards({ usage, loading, modelPrices, nowMs, sparklines }: St
     let tokenCount = 0;
     const hasValidNow = Number.isFinite(now) && now > 0;
 
-    details.forEach((detail) => {
+    usageDetails.forEach((detail) => {
       const tokens = detail.tokens;
       cachedTokens += Math.max(
         typeof tokens.cached_tokens === 'number' ? Math.max(tokens.cached_tokens, 0) : 0,
@@ -128,7 +135,7 @@ export function StatCards({ usage, loading, modelPrices, nowMs, sparklines }: St
       totalCost,
       latencyStats,
     };
-  }, [hasPrices, modelPrices, nowMs, usage]);
+  }, [hasPrices, modelPrices, nowMs, usage, usageDetails]);
 
   const statsCards: StatCardData[] = [
     {

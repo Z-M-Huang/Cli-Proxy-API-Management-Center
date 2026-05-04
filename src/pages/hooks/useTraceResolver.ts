@@ -6,11 +6,9 @@ import type { AuthFileItem, Config } from '@/types';
 import type { CredentialInfo, SourceInfo } from '@/types/sourceInfo';
 import { buildSourceInfoMap, resolveSourceDisplay } from '@/utils/sourceResolver';
 import { parseTimestampMs } from '@/utils/timestamp';
-import {
-  collectUsageDetailsWithEndpoint,
-  normalizeAuthIndex,
-  type UsageDetailWithEndpoint
-} from '@/utils/usage';
+import { normalizeAuthIndex } from '@/utils/usage/identity';
+import { collectUsageDetailsWithEndpoint } from '@/utils/usage/details';
+import type { UsageDetailWithEndpoint } from '@/utils/usage/types';
 import type { ParsedLogLine } from './logTypes';
 
 export type TraceCandidate = {

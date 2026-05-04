@@ -3,7 +3,8 @@
  */
 
 import { apiClient } from './client';
-import { computeKeyStats, KeyStats } from '@/utils/usage';
+import { computeKeyStats } from '@/utils/usage/keyStats';
+import type { KeyStats } from '@/utils/usage/types';
 
 const USAGE_TIMEOUT_MS = 60 * 1000;
 

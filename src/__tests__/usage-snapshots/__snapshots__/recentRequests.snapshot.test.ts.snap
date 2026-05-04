@@ -1,0 +1,235 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`recentRequests snapshots > builds status-bar data from recent buckets 1`] = `
+{
+  "blockDetails": [
+    {
+      "endTime": 1777798200000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777797600000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777798800000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777798200000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777799400000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777798800000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777800000000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777799400000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777800600000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777800000000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777801200000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777800600000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777801800000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777801200000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777802400000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777801800000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777803000000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777802400000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777803600000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777803000000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777804200000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777803600000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777804800000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777804200000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777805400000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777804800000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777806000000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777805400000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777806600000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777806000000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777807200000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777806600000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777807800000,
+      "failure": 0,
+      "rate": 1,
+      "startTime": 1777807200000,
+      "success": 2,
+    },
+    {
+      "endTime": 1777808400000,
+      "failure": 1,
+      "rate": 0,
+      "startTime": 1777807800000,
+      "success": 0,
+    },
+    {
+      "endTime": 1777809000000,
+      "failure": 2,
+      "rate": 0.6,
+      "startTime": 1777808400000,
+      "success": 3,
+    },
+    {
+      "endTime": 1777809600000,
+      "failure": 0,
+      "rate": -1,
+      "startTime": 1777809000000,
+      "success": 0,
+    },
+  ],
+  "blocks": [
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "idle",
+    "success",
+    "failure",
+    "mixed",
+    "idle",
+  ],
+  "successRate": 62.5,
+  "totalFailure": 3,
+  "totalSuccess": 5,
+}
+`;
+
+exports[`recentRequests snapshots > merges aligned bucket groups 1`] = `
+[
+  {
+    "failed": 0,
+    "success": 1,
+    "time": "2026-05-03T09:50:00Z",
+  },
+  {
+    "failed": 2,
+    "success": 3,
+    "time": "2026-05-03T10:00:00Z",
+  },
+  {
+    "failed": 1,
+    "success": 6,
+    "time": "2026-05-03T10:10:00Z",
+  },
+]
+`;
+
+exports[`recentRequests snapshots > normalizes bucket fixtures 1`] = `
+[
+  {
+    "failed": 1,
+    "success": 2,
+    "time": "2026-05-03T10:00:00Z",
+  },
+  {
+    "failed": 4,
+    "success": 0,
+    "time": "2026-05-03T10:10:00Z",
+  },
+  {
+    "failed": 0,
+    "success": 5,
+  },
+  {
+    "failed": 0,
+    "success": 0,
+  },
+]
+`;
+
+exports[`recentRequests snapshots > normalizes usage-entry fixtures 1`] = `
+{
+  "failed": 3,
+  "recentRequests": [
+    {
+      "failed": 0,
+      "success": 2,
+      "time": "2026-05-03T10:00:00Z",
+    },
+    {
+      "failed": 2,
+      "success": 1,
+      "time": "2026-05-03T10:10:00Z",
+    },
+  ],
+  "success": 9,
+}
+`;

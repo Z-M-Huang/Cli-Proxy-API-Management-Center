@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { collectUsageDetails, extractTotalTokens } from '@/utils/usage';
+import { extractTotalTokens } from '@/utils/usage/details';
+import type { UsageDetail } from '@/utils/usage/types';
 import type { UsagePayload } from './useUsageData';
 
 export interface SparklineData {
@@ -23,6 +24,7 @@ export interface SparklineBundle {
 
 export interface UseSparklinesOptions {
   usage: UsagePayload | null;
+  usageDetails: UsageDetail[];
   loading: boolean;
   nowMs: number;
 }
@@ -35,14 +37,18 @@ export interface UseSparklinesReturn {
   costSparkline: SparklineBundle | null;
 }
 
-export function useSparklines({ usage, loading, nowMs }: UseSparklinesOptions): UseSparklinesReturn {
+export function useSparklines({
+  usage,
+  usageDetails,
+  loading,
+  nowMs,
+}: UseSparklinesOptions): UseSparklinesReturn {
   const lastHourSeries = useMemo(() => {
     if (!usage) return { labels: [], requests: [], tokens: [] };
     if (!Number.isFinite(nowMs) || nowMs <= 0) {
       return { labels: [], requests: [], tokens: [] };
     }
-    const details = collectUsageDetails(usage);
-    if (!details.length) return { labels: [], requests: [], tokens: [] };
+    if (!usageDetails.length) return { labels: [], requests: [], tokens: [] };
 
     const windowMinutes = 60;
     const now = nowMs;
@@ -50,7 +56,7 @@ export function useSparklines({ usage, loading, nowMs }: UseSparklinesOptions): 
     const requestBuckets = new Array(windowMinutes).fill(0);
     const tokenBuckets = new Array(windowMinutes).fill(0);
 
-    details.forEach((detail) => {
+    usageDetails.forEach((detail) => {
       const timestamp = detail.__timestampMs ?? 0;
       if (!Number.isFinite(timestamp) || timestamp < windowStart || timestamp > now) {
         return;
@@ -71,7 +77,7 @@ export function useSparklines({ usage, loading, nowMs }: UseSparklinesOptions): 
     });
 
     return { labels, requests: requestBuckets, tokens: tokenBuckets };
-  }, [nowMs, usage]);
+  }, [nowMs, usage, usageDetails]);
 
   const buildSparkline = useCallback(
     (

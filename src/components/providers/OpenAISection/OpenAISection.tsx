@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -18,7 +19,7 @@ import iconOpenaiLight from '@/assets/icons/openai-light.svg';
 import iconOpenaiDark from '@/assets/icons/openai-dark.svg';
 import type { OpenAIProviderConfig } from '@/types';
 import { maskApiKey } from '@/utils/format';
-import { statusBarDataFromRecentRequests } from '@/utils/recentRequests';
+import { EMPTY_STATUS_BAR, statusBarDataFromRecentRequests } from '@/utils/recentRequests';
 import styles from '@/pages/AiProvidersPage.module.scss';
 import { ProviderStatusBar } from '../ProviderStatusBar';
 import { usePageTransitionLayer } from '@/components/common/PageTransitionLayer';
@@ -40,8 +41,6 @@ interface FloatingToolbarStyle {
   width: number;
   visible: boolean;
 }
-
-const EMPTY_STATUS_BAR = statusBarDataFromRecentRequests([]);
 
 interface OpenAISectionProps {
   configs: OpenAIProviderConfig[];
@@ -708,7 +707,10 @@ export function OpenAISection({
               description={t('ai_providers.openai_empty_desc')}
             />
           ) : (
-            <div className={styles.openaiProviderList}>{sortedConfigs.map(renderProviderCard)}</div>
+            <VirtualizedProviderList
+              items={sortedConfigs}
+              renderItem={renderProviderCard}
+            />
           )}
         </Card>
       </div>
@@ -731,5 +733,105 @@ export function OpenAISection({
           )
         : null}
     </>
+  );
+}
+
+// Threshold above which the provider list switches from CSS-grid render
+// to single-column virtualised render. Real-world usage rarely exceeds
+// 20 providers; the bench's 500-row fixture exercises the virtualised
+// path. Below threshold we keep the existing multi-column grid layout
+// (Codex Stage 1 exit round 2 FE-R2-3: virtualisation must not regress
+// the prior desktop grid layout for the typical case).
+const OPENAI_VIRTUALIZATION_THRESHOLD = 50;
+
+// VirtualizedProviderList renders the OpenAI provider cards. Below
+// OPENAI_VIRTUALIZATION_THRESHOLD it renders the original CSS-grid
+// layout unchanged. Above the threshold it switches to a single-column
+// virtualised list backed by @tanstack/react-virtual so the DOM cost
+// stays O(viewport) rather than O(provider count) — plan §Phase B
+// "Virtualize OpenAISection provider list with @tanstack/react-virtual".
+//
+// Acceptable observable change above threshold: cards stack vertically
+// instead of wrapping into the auto-fill grid, and Tab focus only
+// reaches cards that are currently inside the scroll viewport (Codex
+// Stage 1 exit round 2 FE-R2-2 — keyboard nav limitation under
+// virtualisation; users scroll to bring offscreen cards into reach).
+//
+// Variable-row-height: cards differ in height based on header/key/model
+// counts, so we use the dynamic measurement path (estimateSize gives a
+// starting guess; useVirtualizer measures real rendered height after
+// mount and re-positions subsequent rows). overscan adds a small buffer
+// so keyboard-driven focus changes inside a row don't trigger an
+// immediate viewport unmount.
+function VirtualizedProviderList<T>({
+  items,
+  renderItem,
+}: {
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
+}) {
+  const parentRef = useRef<HTMLDivElement | null>(null);
+  // Below threshold: render the original grid layout, no virtualization.
+  // Card memoisation already prevents re-render of unaffected cards on
+  // sibling updates; for typical sizes the layout cost is tractable.
+  const shouldVirtualize = items.length >= OPENAI_VIRTUALIZATION_THRESHOLD;
+  // Always call the hook (rules-of-hooks); just feed it 0 below threshold
+  // so it does no work.
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const virtualizer = useVirtualizer({
+    count: shouldVirtualize ? items.length : 0,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 320,
+    overscan: 4,
+  });
+
+  if (!shouldVirtualize) {
+    return (
+      <div className={styles.openaiProviderList}>
+        {items.map((item, idx) => renderItem(item, idx))}
+      </div>
+    );
+  }
+
+  const virtualItems = virtualizer.getVirtualItems();
+  return (
+    <div
+      ref={parentRef}
+      // The 75vh cap keeps the toolbar visible while scrolling a long
+      // provider list. Note: `contain: strict` was tried initially but
+      // its size-containment makes the auto-height parent ignore
+      // children, collapsing clientHeight to 0 (Codex Stage 1 exit round
+      // 2 FE-R2-1). Plain overflow:auto + maxHeight is sufficient.
+      style={{
+        maxHeight: '75vh',
+        overflowY: 'auto',
+        position: 'relative',
+      }}
+    >
+      <div
+        style={{
+          height: `${virtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {virtualItems.map((virtualRow) => (
+          <div
+            key={virtualRow.key}
+            ref={virtualizer.measureElement}
+            data-index={virtualRow.index}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              transform: `translateY(${virtualRow.start}px)`,
+            }}
+          >
+            {renderItem(items[virtualRow.index], virtualRow.index)}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

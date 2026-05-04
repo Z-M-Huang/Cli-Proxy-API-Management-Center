@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent, type RefObj
 import { useTranslation } from 'react-i18next';
 import { authFilesApi } from '@/services/api';
 import { apiClient } from '@/services/api/client';
+import { isAbortError } from '@/hooks/usePoll';
 import { useNotificationStore } from '@/stores';
 import type { AuthFileItem } from '@/types';
 import { formatFileSize } from '@/utils/format';
@@ -34,7 +35,7 @@ export type UseAuthFilesDataResult = {
   statusUpdating: Record<string, boolean>;
   batchStatusUpdating: boolean;
   fileInputRef: RefObject<HTMLInputElement | null>;
-  loadFiles: () => Promise<void>;
+  loadFiles: (signal?: AbortSignal) => Promise<void>;
   handleUploadClick: () => void;
   handleFileChange: (event: ChangeEvent<HTMLInputElement>) => Promise<void>;
   handleDelete: (name: string) => void;
@@ -158,13 +159,19 @@ export function useAuthFilesData(): UseAuthFilesDataResult {
     });
   }, [files, selectedFiles.size]);
 
-  const loadFiles = useCallback(async () => {
+  const loadFiles = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
     setError('');
     try {
-      const data = await authFilesApi.list();
+      const data = await authFilesApi.list({ signal });
       setFiles(data?.files || []);
     } catch (err: unknown) {
+      // Aborted polls are expected (hidden-tab / unmount) — silently
+      // ignore so they do not surface as a page error
+      // (Codex Stage 1 exit round 2 FE-R2-5).
+      if (isAbortError(err)) {
+        return;
+      }
       const errorMessage = err instanceof Error ? err.message : t('notification.refresh_failed');
       setError(errorMessage);
     } finally {
