@@ -205,6 +205,9 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
         case 'usage-statistics-enabled':
           nextConfig.usageStatisticsEnabled = value as Config['usageStatisticsEnabled'];
           break;
+        case 'usage-database-path':
+          nextConfig.usageDatabasePath = value as Config['usageDatabasePath'];
+          break;
         case 'request-log':
           nextConfig.requestLog = value as Config['requestLog'];
           break;

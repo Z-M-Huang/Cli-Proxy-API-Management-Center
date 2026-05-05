@@ -403,6 +403,13 @@ export const normalizeConfigResponse = (raw: unknown): Config => {
   config.usageStatisticsEnabled = normalizeBoolean(
     raw['usage-statistics-enabled'] ?? raw.usageStatisticsEnabled
   );
+  const usageDatabasePath = raw['usage-database-path'] ?? raw.usageDatabasePath;
+  config.usageDatabasePath =
+    typeof usageDatabasePath === 'string'
+      ? usageDatabasePath
+      : usageDatabasePath === undefined || usageDatabasePath === null
+        ? undefined
+        : String(usageDatabasePath);
   config.requestLog = normalizeBoolean(raw['request-log'] ?? raw.requestLog);
   config.loggingToFile = normalizeBoolean(raw['logging-to-file'] ?? raw.loggingToFile);
   const logsMaxTotalSizeMb = raw['logs-max-total-size-mb'] ?? raw.logsMaxTotalSizeMb;
