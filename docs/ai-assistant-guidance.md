@@ -140,6 +140,21 @@ Current fork topics:
 - `usage`: charts, request-event analysis, source-resolution helpers, and import/export UI.
 - `branding`: release tags, repo links, and sidebar/system-page affordances.
 
+## Upstream Conflict Playbook
+
+When merging `upstream/dev`, resolve conflicts by intent rather than mechanically choosing one side:
+
+1. Keep fork identity, release wiring, repository URLs, assistant guidance, README fork notices, `zmh-v*` tag behavior, and self-hosted release workflow behavior from this fork.
+2. Take upstream's generic UI fixes, dependency updates, tests, accessibility improvements, and refactors unless they directly remove or break a fork feature.
+3. When upstream changes code that a fork feature touches, adapt the fork feature to the upstream shape instead of reverting the upstream change. Preserve both behaviors when they are distinct compatibility surfaces.
+4. For overlapping routes or navigation, keep fork pages stable and add upstream routes alongside them when they serve different users.
+5. For API client conflicts, keep the backend contract stable for fork-only endpoints, but reuse upstream client helpers or response normalization when upstream improves the shared pattern.
+6. For i18n conflicts, keep fork-specific wording and add any new upstream keys to all four locale files: `en`, `zh-CN`, `zh-TW`, and `ru`.
+7. For package manifests, resolve `package.json` first, then regenerate `package-lock.json` with `npm install --package-lock-only` when dependencies changed. Do not hand-edit lockfile internals except to resolve an already-equivalent merge.
+8. For conflicts outside the customization surface, stop and understand why the overlap exists before resolving it. Treat repeated conflicts in the same area as a signal to extract a fork-owned component, hook, or helper.
+9. Run `npm run lint`, `npm run type-check`, and `npm run build`; add `npm run test` when tests or shared UI logic changed.
+10. In the sync PR, document each non-trivial conflict as `kept fork`, `took upstream`, or `adapted both`, with a one-line rationale.
+
 ## Pointers
 
 - `CONTRIBUTING.md`: fork workflow, branch model, release process, and customization surface.
