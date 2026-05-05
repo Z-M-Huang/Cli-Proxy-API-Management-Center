@@ -23,11 +23,63 @@ export interface UsageImportResponse {
   [key: string]: unknown;
 }
 
+export interface UsageEventRecord {
+  id?: number;
+  timestamp?: string;
+  api_group_key?: string;
+  provider?: string;
+  endpoint?: string;
+  auth_type?: string;
+  request_id?: string;
+  model?: string;
+  source?: string;
+  auth_index?: string;
+  failed?: boolean;
+  latency_ms?: number;
+  tokens?: Record<string, number>;
+}
+
+export interface UsageEventsResponse {
+  events?: UsageEventRecord[];
+  models?: string[];
+  sources?: string[];
+  total_count?: number;
+  page?: number;
+  page_size?: number;
+  total_pages?: number;
+  [key: string]: unknown;
+}
+
+export interface UsageEventsParams {
+  page?: number;
+  page_size?: number;
+  start_time?: string;
+  end_time?: string;
+  model?: string;
+  source?: string;
+  result?: 'success' | 'failed';
+}
+
 export const usageApi = {
   /**
    * 获取使用统计原始数据
    */
   getUsage: () => apiClient.get<Record<string, unknown>>('/usage', { timeout: USAGE_TIMEOUT_MS }),
+
+  /**
+   * 获取持久化使用事件
+   */
+  getUsageEvents: (params?: UsageEventsParams) =>
+    apiClient.get<UsageEventsResponse>('/usage/events', { params, timeout: USAGE_TIMEOUT_MS }),
+
+  /**
+   * 获取持久化使用事件筛选项
+   */
+  getUsageEventFilters: (params?: Pick<UsageEventsParams, 'start_time' | 'end_time'>) =>
+    apiClient.get<{ models?: string[]; sources?: string[] }>('/usage/events/filters', {
+      params,
+      timeout: USAGE_TIMEOUT_MS
+    }),
 
   /**
    * 导出使用统计快照

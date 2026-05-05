@@ -18,6 +18,7 @@ export interface Config {
   requestRetry?: number;
   quotaExceeded?: QuotaExceededConfig;
   usageStatisticsEnabled?: boolean;
+  usageDatabasePath?: string;
   requestLog?: boolean;
   loggingToFile?: boolean;
   logsMaxTotalSizeMb?: number;
@@ -41,6 +42,7 @@ export type RawConfigSection =
   | 'request-retry'
   | 'quota-exceeded'
   | 'usage-statistics-enabled'
+  | 'usage-database-path'
   | 'request-log'
   | 'logging-to-file'
   | 'logs-max-total-size-mb'
