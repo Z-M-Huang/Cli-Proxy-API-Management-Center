@@ -1279,6 +1279,22 @@
           "ws_auth": "Аутентификация WebSocket",
           "ws_auth_desc": "Включить аутентификацию WebSocket (/v1/ws)"
         },
+        "headers": {
+          "title": "Заголовки провайдеров",
+          "description": "Значения User-Agent для исходящих запросов по умолчанию",
+          "claude_user_agent": "Claude User-Agent",
+          "claude_user_agent_hint": "Используется для запросов Claude, если не применён более приоритетный клиент Claude или пользовательский заголовок",
+          "codex_user_agent": "Codex User-Agent",
+          "codex_user_agent_hint": "Используется для OAuth-запросов Codex. Записи Codex API-key сохраняют поведение явного клиентского заголовка.",
+          "gemini_cli_user_agent": "Gemini CLI User-Agent",
+          "gemini_cli_user_agent_hint": "Оставьте пустым, чтобы сохранить генерируемое значение GeminiCLI/<version>/<model>",
+          "openai_compat_user_agent": "User-Agent для OpenAI-совместимых провайдеров",
+          "openai_compat_user_agent_hint": "Используется, если headers OpenAI-совместимого провайдера не задают User-Agent",
+          "kimi_user_agent": "Kimi User-Agent",
+          "kimi_user_agent_hint": "Оставьте пустым, чтобы сохранить встроенное значение KimiCLI",
+          "antigravity_user_agent": "Antigravity User-Agent",
+          "antigravity_user_agent_hint": "Базовый Antigravity UA. Короткая и control-plane формы всё ещё выводятся существующей логикой Antigravity."
+        },
         "quota": {
           "title": "Резерв по квоте",
           "description": "Стратегия при превышении квоты",

@@ -1280,6 +1280,22 @@
           "ws_auth": "WebSocket 认证",
           "ws_auth_desc": "启用 WebSocket 连接认证 (/v1/ws)"
         },
+        "headers": {
+          "title": "提供商请求头",
+          "description": "默认上游 User-Agent",
+          "claude_user_agent": "Claude User-Agent",
+          "claude_user_agent_hint": "当没有更高优先级的 Claude 客户端或自定义请求头值时使用",
+          "codex_user_agent": "Codex User-Agent",
+          "codex_user_agent_hint": "用于 Codex OAuth 请求。Codex API-key 条目保留显式客户端请求头行为。",
+          "gemini_cli_user_agent": "Gemini CLI User-Agent",
+          "gemini_cli_user_agent_hint": "留空则保留生成的 GeminiCLI/<version>/<model> 值",
+          "openai_compat_user_agent": "OpenAI 兼容 User-Agent",
+          "openai_compat_user_agent_hint": "当 OpenAI 兼容提供商的 headers 未设置 User-Agent 时使用",
+          "kimi_user_agent": "Kimi User-Agent",
+          "kimi_user_agent_hint": "留空则保留内置 KimiCLI 值",
+          "antigravity_user_agent": "Antigravity User-Agent",
+          "antigravity_user_agent_hint": "基础 Antigravity UA。短格式和控制面格式仍由现有 Antigravity 逻辑派生。"
+        },
         "quota": {
           "title": "配额回退",
           "description": "配额耗尽时的回退策略",

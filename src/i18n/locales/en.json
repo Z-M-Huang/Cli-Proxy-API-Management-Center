@@ -1280,6 +1280,22 @@
           "ws_auth": "WebSocket Authentication",
           "ws_auth_desc": "Enable WebSocket authentication (/v1/ws)"
         },
+        "headers": {
+          "title": "Provider Headers",
+          "description": "Default upstream User-Agent values",
+          "claude_user_agent": "Claude User-Agent",
+          "claude_user_agent_hint": "Used by Claude requests when no stronger Claude client or custom header value applies",
+          "codex_user_agent": "Codex User-Agent",
+          "codex_user_agent_hint": "Used by Codex OAuth requests. Codex API-key entries keep their explicit client header behavior.",
+          "gemini_cli_user_agent": "Gemini CLI User-Agent",
+          "gemini_cli_user_agent_hint": "Leave empty to keep the generated GeminiCLI/<version>/<model> value",
+          "openai_compat_user_agent": "OpenAI-compatible User-Agent",
+          "openai_compat_user_agent_hint": "Used when OpenAI-compatible provider headers do not set User-Agent",
+          "kimi_user_agent": "Kimi User-Agent",
+          "kimi_user_agent_hint": "Leave empty to keep the built-in KimiCLI value",
+          "antigravity_user_agent": "Antigravity User-Agent",
+          "antigravity_user_agent_hint": "Base Antigravity UA. Short/control-plane forms are still derived by existing Antigravity logic."
+        },
         "quota": {
           "title": "Quota Fallback",
           "description": "Fallback strategy when quota is exceeded",
