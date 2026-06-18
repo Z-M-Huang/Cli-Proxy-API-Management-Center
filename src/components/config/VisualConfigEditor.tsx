@@ -22,6 +22,7 @@ import {
   IconSatellite,
   IconSettings,
   IconShield,
+  IconSlidersHorizontal,
   IconTimer,
   IconTrendingUp,
   type IconProps,
@@ -51,6 +52,7 @@ type VisualSectionId =
   | 'auth'
   | 'system'
   | 'network'
+  | 'headers'
   | 'quota'
   | 'streaming'
   | 'payload';
@@ -298,6 +300,13 @@ export function VisualConfigEditor({
         errorCount: countErrors(['requestRetry', 'maxRetryCredentials', 'maxRetryInterval']),
       },
       {
+        id: 'headers',
+        title: t('config_management.visual.sections.headers.title'),
+        description: t('config_management.visual.sections.headers.description'),
+        icon: IconSlidersHorizontal,
+        errorCount: 0,
+      },
+      {
         id: 'quota',
         title: t('config_management.visual.sections.quota.title'),
         description: t('config_management.visual.sections.quota.description'),
@@ -329,7 +338,10 @@ export function VisualConfigEditor({
   const hasValidationIssues =
     sections.some((section) => section.errorCount > 0) || hasPayloadValidationErrors;
   const focusSections = useMemo(
-    () => sections.filter((section) => ['server', 'network', 'payload'].includes(section.id)),
+    () =>
+      sections.filter((section) =>
+        ['server', 'network', 'headers', 'payload'].includes(section.id)
+      ),
     [sections]
   );
 
@@ -440,7 +452,8 @@ export function VisualConfigEditor({
         220
       );
       const maxHeight = Math.max(window.innerHeight - top - viewportPadding, 160);
-      const isVisible = workspaceRect.bottom > stickyTop + 24 && anchorRect.top < window.innerHeight;
+      const isVisible =
+        workspaceRect.bottom > stickyTop + 24 && anchorRect.top < window.innerHeight;
 
       floatingElement.style.transform = `translate3d(${left}px, ${top}px, 0)`;
       floatingElement.style.width = `${width}px`;
@@ -925,11 +938,73 @@ export function VisualConfigEditor({
           </ConfigSection>
 
           <ConfigSection
+            id="headers"
+            ref={(node) => {
+              sectionRefs.current.headers = node;
+            }}
+            indexLabel="07"
+            icon={<IconSlidersHorizontal size={16} />}
+            title={t('config_management.visual.sections.headers.title')}
+            description={t('config_management.visual.sections.headers.description')}
+          >
+            <SectionGrid>
+              <Input
+                label={t('config_management.visual.sections.headers.claude_user_agent')}
+                placeholder="claude-cli/2.1.63 (external, cli)"
+                value={values.claudeHeaderUserAgent}
+                onChange={(e) => onChange({ claudeHeaderUserAgent: e.target.value })}
+                disabled={disabled}
+                hint={t('config_management.visual.sections.headers.claude_user_agent_hint')}
+              />
+              <Input
+                label={t('config_management.visual.sections.headers.codex_user_agent')}
+                placeholder="codex-tui/0.135.0 ..."
+                value={values.codexHeaderUserAgent}
+                onChange={(e) => onChange({ codexHeaderUserAgent: e.target.value })}
+                disabled={disabled}
+                hint={t('config_management.visual.sections.headers.codex_user_agent_hint')}
+              />
+              <Input
+                label={t('config_management.visual.sections.headers.gemini_cli_user_agent')}
+                placeholder="GeminiCLI/0.34.0/unknown (darwin; arm64; terminal)"
+                value={values.geminiCLIHeaderUserAgent}
+                onChange={(e) => onChange({ geminiCLIHeaderUserAgent: e.target.value })}
+                disabled={disabled}
+                hint={t('config_management.visual.sections.headers.gemini_cli_user_agent_hint')}
+              />
+              <Input
+                label={t('config_management.visual.sections.headers.openai_compat_user_agent')}
+                placeholder="cli-proxy-openai-compat"
+                value={values.openAICompatHeaderUserAgent}
+                onChange={(e) => onChange({ openAICompatHeaderUserAgent: e.target.value })}
+                disabled={disabled}
+                hint={t('config_management.visual.sections.headers.openai_compat_user_agent_hint')}
+              />
+              <Input
+                label={t('config_management.visual.sections.headers.kimi_user_agent')}
+                placeholder="KimiCLI/1.10.6"
+                value={values.kimiHeaderUserAgent}
+                onChange={(e) => onChange({ kimiHeaderUserAgent: e.target.value })}
+                disabled={disabled}
+                hint={t('config_management.visual.sections.headers.kimi_user_agent_hint')}
+              />
+              <Input
+                label={t('config_management.visual.sections.headers.antigravity_user_agent')}
+                placeholder="antigravity/1.23.2 darwin/arm64"
+                value={values.antigravityHeaderUserAgent}
+                onChange={(e) => onChange({ antigravityHeaderUserAgent: e.target.value })}
+                disabled={disabled}
+                hint={t('config_management.visual.sections.headers.antigravity_user_agent_hint')}
+              />
+            </SectionGrid>
+          </ConfigSection>
+
+          <ConfigSection
             id="quota"
             ref={(node) => {
               sectionRefs.current.quota = node;
             }}
-            indexLabel="07"
+            indexLabel="08"
             icon={<IconTimer size={16} />}
             title={t('config_management.visual.sections.quota.title')}
             description={t('config_management.visual.sections.quota.description')}
@@ -951,9 +1026,7 @@ export function VisualConfigEditor({
               />
               <ToggleRow
                 title={t('config_management.visual.sections.quota.antigravity_credits')}
-                description={t(
-                  'config_management.visual.sections.quota.antigravity_credits_desc'
-                )}
+                description={t('config_management.visual.sections.quota.antigravity_credits_desc')}
                 checked={values.quotaAntigravityCredits}
                 disabled={disabled}
                 onChange={(quotaAntigravityCredits) => onChange({ quotaAntigravityCredits })}
@@ -966,7 +1039,7 @@ export function VisualConfigEditor({
             ref={(node) => {
               sectionRefs.current.streaming = node;
             }}
-            indexLabel="08"
+            indexLabel="09"
             icon={<IconSatellite size={16} />}
             title={t('config_management.visual.sections.streaming.title')}
             description={t('config_management.visual.sections.streaming.description')}
@@ -1067,7 +1140,7 @@ export function VisualConfigEditor({
             ref={(node) => {
               sectionRefs.current.payload = node;
             }}
-            indexLabel="09"
+            indexLabel="10"
             icon={<IconCode size={16} />}
             title={t('config_management.visual.sections.payload.title')}
             description={t('config_management.visual.sections.payload.description')}

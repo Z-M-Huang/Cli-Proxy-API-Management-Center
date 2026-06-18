@@ -118,6 +118,22 @@ function setStringInDoc(doc: YamlDocument, path: YamlPath, value: unknown): void
   }
 }
 
+function setManagedStringInDoc(
+  doc: YamlDocument,
+  path: YamlPath,
+  value: unknown,
+  dirtyFields: Set<string>,
+  dirtyKey: string
+): void {
+  const parentPath = path.slice(0, -1);
+  if (!shouldWriteManagedField(doc, path, dirtyFields, dirtyKey)) {
+    return;
+  }
+  ensureMapInDoc(doc, parentPath);
+  setStringInDoc(doc, path, value);
+  deleteIfMapEmpty(doc, parentPath);
+}
+
 function setIntFromStringInDoc(doc: YamlDocument, path: YamlPath, value: unknown): void {
   const safe = typeof value === 'string' ? value : '';
   const trimmed = safe.trim();
@@ -644,6 +660,42 @@ function getNextDirtyFields(
       nextValues.maxRetryInterval === baselineValues.maxRetryInterval
     );
   }
+  if (Object.prototype.hasOwnProperty.call(patch, 'claudeHeaderUserAgent')) {
+    updateDirty(
+      'claudeHeaderUserAgent',
+      nextValues.claudeHeaderUserAgent === baselineValues.claudeHeaderUserAgent
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'codexHeaderUserAgent')) {
+    updateDirty(
+      'codexHeaderUserAgent',
+      nextValues.codexHeaderUserAgent === baselineValues.codexHeaderUserAgent
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'geminiCLIHeaderUserAgent')) {
+    updateDirty(
+      'geminiCLIHeaderUserAgent',
+      nextValues.geminiCLIHeaderUserAgent === baselineValues.geminiCLIHeaderUserAgent
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'openAICompatHeaderUserAgent')) {
+    updateDirty(
+      'openAICompatHeaderUserAgent',
+      nextValues.openAICompatHeaderUserAgent === baselineValues.openAICompatHeaderUserAgent
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'kimiHeaderUserAgent')) {
+    updateDirty(
+      'kimiHeaderUserAgent',
+      nextValues.kimiHeaderUserAgent === baselineValues.kimiHeaderUserAgent
+    );
+  }
+  if (Object.prototype.hasOwnProperty.call(patch, 'antigravityHeaderUserAgent')) {
+    updateDirty(
+      'antigravityHeaderUserAgent',
+      nextValues.antigravityHeaderUserAgent === baselineValues.antigravityHeaderUserAgent
+    );
+  }
   if (Object.prototype.hasOwnProperty.call(patch, 'wsAuth')) {
     updateDirty('wsAuth', nextValues.wsAuth === baselineValues.wsAuth);
   }
@@ -815,6 +867,14 @@ export function useVisualConfig() {
       const remoteManagement = asRecord(parsed['remote-management']);
       const quotaExceeded = asRecord(parsed['quota-exceeded']);
       const routing = asRecord(parsed.routing);
+      const claudeHeaderDefaults = asRecord(parsed['claude-header-defaults']);
+      const codexHeaderDefaults = asRecord(parsed['codex-header-defaults']);
+      const geminiCLIHeaderDefaults = asRecord(parsed['gemini-cli-header-defaults']);
+      const openAICompatibilityHeaderDefaults = asRecord(
+        parsed['openai-compatibility-header-defaults']
+      );
+      const kimiHeaderDefaults = asRecord(parsed['kimi-header-defaults']);
+      const antigravityHeaderDefaults = asRecord(parsed['antigravity-header-defaults']);
       const payload = asRecord(parsed.payload);
       const streaming = asRecord(parsed.streaming);
 
@@ -853,6 +913,30 @@ export function useVisualConfig() {
         requestRetry: String(parsed['request-retry'] ?? ''),
         maxRetryCredentials: String(parsed['max-retry-credentials'] ?? ''),
         maxRetryInterval: String(parsed['max-retry-interval'] ?? ''),
+        claudeHeaderUserAgent:
+          typeof claudeHeaderDefaults?.['user-agent'] === 'string'
+            ? claudeHeaderDefaults['user-agent']
+            : '',
+        codexHeaderUserAgent:
+          typeof codexHeaderDefaults?.['user-agent'] === 'string'
+            ? codexHeaderDefaults['user-agent']
+            : '',
+        geminiCLIHeaderUserAgent:
+          typeof geminiCLIHeaderDefaults?.['user-agent'] === 'string'
+            ? geminiCLIHeaderDefaults['user-agent']
+            : '',
+        openAICompatHeaderUserAgent:
+          typeof openAICompatibilityHeaderDefaults?.['user-agent'] === 'string'
+            ? openAICompatibilityHeaderDefaults['user-agent']
+            : '',
+        kimiHeaderUserAgent:
+          typeof kimiHeaderDefaults?.['user-agent'] === 'string'
+            ? kimiHeaderDefaults['user-agent']
+            : '',
+        antigravityHeaderUserAgent:
+          typeof antigravityHeaderDefaults?.['user-agent'] === 'string'
+            ? antigravityHeaderDefaults['user-agent']
+            : '',
         wsAuth: Boolean(parsed['ws-auth']),
 
         quotaSwitchProject: Boolean(quotaExceeded?.['switch-project'] ?? true),
@@ -861,9 +945,7 @@ export function useVisualConfig() {
 
         routingStrategy: routing?.strategy === 'fill-first' ? 'fill-first' : 'round-robin',
         routingSessionAffinity: Boolean(
-          routing?.['session-affinity'] ??
-            routing?.sessionAffinity ??
-            routing?.['sessionAffinity']
+          routing?.['session-affinity'] ?? routing?.sessionAffinity ?? routing?.['sessionAffinity']
         ),
         routingSessionAffinityTTL:
           typeof routing?.['session-affinity-ttl'] === 'string'
@@ -968,6 +1050,48 @@ export function useVisualConfig() {
         setIntFromStringInDoc(doc, ['request-retry'], values.requestRetry);
         setIntFromStringInDoc(doc, ['max-retry-credentials'], values.maxRetryCredentials);
         setIntFromStringInDoc(doc, ['max-retry-interval'], values.maxRetryInterval);
+        setManagedStringInDoc(
+          doc,
+          ['claude-header-defaults', 'user-agent'],
+          values.claudeHeaderUserAgent,
+          dirtyFields,
+          'claudeHeaderUserAgent'
+        );
+        setManagedStringInDoc(
+          doc,
+          ['codex-header-defaults', 'user-agent'],
+          values.codexHeaderUserAgent,
+          dirtyFields,
+          'codexHeaderUserAgent'
+        );
+        setManagedStringInDoc(
+          doc,
+          ['gemini-cli-header-defaults', 'user-agent'],
+          values.geminiCLIHeaderUserAgent,
+          dirtyFields,
+          'geminiCLIHeaderUserAgent'
+        );
+        setManagedStringInDoc(
+          doc,
+          ['openai-compatibility-header-defaults', 'user-agent'],
+          values.openAICompatHeaderUserAgent,
+          dirtyFields,
+          'openAICompatHeaderUserAgent'
+        );
+        setManagedStringInDoc(
+          doc,
+          ['kimi-header-defaults', 'user-agent'],
+          values.kimiHeaderUserAgent,
+          dirtyFields,
+          'kimiHeaderUserAgent'
+        );
+        setManagedStringInDoc(
+          doc,
+          ['antigravity-header-defaults', 'user-agent'],
+          values.antigravityHeaderUserAgent,
+          dirtyFields,
+          'antigravityHeaderUserAgent'
+        );
         setBooleanInDoc(doc, ['ws-auth'], values.wsAuth);
 
         if (
@@ -991,10 +1115,7 @@ export function useVisualConfig() {
           doc.setIn(['quota-exceeded', 'switch-project'], values.quotaSwitchProject);
           doc.setIn(['quota-exceeded', 'switch-preview-model'], values.quotaSwitchPreviewModel);
           if (writeQuotaAntigravityCredits) {
-            doc.setIn(
-              ['quota-exceeded', 'antigravity-credits'],
-              values.quotaAntigravityCredits
-            );
+            doc.setIn(['quota-exceeded', 'antigravity-credits'], values.quotaAntigravityCredits);
           }
           deleteIfMapEmpty(doc, ['quota-exceeded']);
         }

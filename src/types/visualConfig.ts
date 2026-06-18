@@ -73,6 +73,12 @@ export type VisualConfigValues = {
   requestRetry: string;
   maxRetryCredentials: string;
   maxRetryInterval: string;
+  claudeHeaderUserAgent: string;
+  codexHeaderUserAgent: string;
+  geminiCLIHeaderUserAgent: string;
+  openAICompatHeaderUserAgent: string;
+  kimiHeaderUserAgent: string;
+  antigravityHeaderUserAgent: string;
   quotaSwitchProject: boolean;
   quotaSwitchPreviewModel: boolean;
   quotaAntigravityCredits: boolean;
@@ -115,6 +121,12 @@ export const DEFAULT_VISUAL_VALUES: VisualConfigValues = {
   requestRetry: '',
   maxRetryCredentials: '',
   maxRetryInterval: '',
+  claudeHeaderUserAgent: '',
+  codexHeaderUserAgent: '',
+  geminiCLIHeaderUserAgent: '',
+  openAICompatHeaderUserAgent: '',
+  kimiHeaderUserAgent: '',
+  antigravityHeaderUserAgent: '',
   quotaSwitchProject: true,
   quotaSwitchPreviewModel: true,
   quotaAntigravityCredits: false,
