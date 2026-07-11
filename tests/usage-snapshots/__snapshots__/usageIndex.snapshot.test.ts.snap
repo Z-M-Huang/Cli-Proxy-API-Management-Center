@@ -1,0 +1,307 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`usageIndex snapshots > indexes usage details by source and auth index 1`] = `
+{
+  "authIndexSlice": [
+    {
+      "auth_index": 7,
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "t:prefix-b",
+      "total_tokens": 18,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": false,
+      "model": "gpt-4o-mini",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 33,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": true,
+      "model": "gpt-4o-mini",
+      "source": "t:prefix-a",
+      "total_tokens": 5,
+    },
+  ],
+  "byAuthIndex": {
+    "7": [
+      {
+        "auth_index": 7,
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "t:prefix-b",
+        "total_tokens": 18,
+      },
+    ],
+    "auth-a": [
+      {
+        "auth_index": "auth-a",
+        "failed": false,
+        "model": "gpt-4o-mini",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 33,
+      },
+      {
+        "auth_index": "auth-a",
+        "failed": true,
+        "model": "gpt-4o-mini",
+        "source": "t:prefix-a",
+        "total_tokens": 5,
+      },
+    ],
+    "auth-b": [
+      {
+        "auth_index": "auth-b",
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 15,
+      },
+    ],
+  },
+  "bySource": {
+    "k:9423da28d1ab9915": [
+      {
+        "auth_index": "auth-a",
+        "failed": false,
+        "model": "gpt-4o-mini",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 33,
+      },
+      {
+        "auth_index": "auth-b",
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 15,
+      },
+    ],
+    "t:prefix-a": [
+      {
+        "auth_index": "auth-a",
+        "failed": true,
+        "model": "gpt-4o-mini",
+        "source": "t:prefix-a",
+        "total_tokens": 5,
+      },
+    ],
+    "t:prefix-b": [
+      {
+        "auth_index": 7,
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "t:prefix-b",
+        "total_tokens": 18,
+      },
+    ],
+  },
+  "candidateSlice": [
+    {
+      "auth_index": "auth-a",
+      "failed": true,
+      "model": "gpt-4o-mini",
+      "source": "t:prefix-a",
+      "total_tokens": 5,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": false,
+      "model": "gpt-4o-mini",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 33,
+    },
+    {
+      "auth_index": "auth-b",
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 15,
+    },
+  ],
+  "usageDetails": [
+    {
+      "auth_index": "auth-a",
+      "failed": false,
+      "model": "gpt-4o-mini",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 33,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": true,
+      "model": "gpt-4o-mini",
+      "source": "t:prefix-a",
+      "total_tokens": 5,
+    },
+    {
+      "auth_index": 7,
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "t:prefix-b",
+      "total_tokens": 18,
+    },
+    {
+      "auth_index": "auth-b",
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 15,
+    },
+  ],
+}
+`;
+
+exports[`usageIndex snapshots indexes usage details by source and auth index 1`] = `
+{
+  "authIndexSlice": [
+    {
+      "auth_index": 7,
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "t:prefix-b",
+      "total_tokens": 18,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": false,
+      "model": "gpt-4o-mini",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 33,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": true,
+      "model": "gpt-4o-mini",
+      "source": "t:prefix-a",
+      "total_tokens": 5,
+    },
+  ],
+  "byAuthIndex": {
+    "7": [
+      {
+        "auth_index": 7,
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "t:prefix-b",
+        "total_tokens": 18,
+      },
+    ],
+    "auth-a": [
+      {
+        "auth_index": "auth-a",
+        "failed": false,
+        "model": "gpt-4o-mini",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 33,
+      },
+      {
+        "auth_index": "auth-a",
+        "failed": true,
+        "model": "gpt-4o-mini",
+        "source": "t:prefix-a",
+        "total_tokens": 5,
+      },
+    ],
+    "auth-b": [
+      {
+        "auth_index": "auth-b",
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 15,
+      },
+    ],
+  },
+  "bySource": {
+    "k:9423da28d1ab9915": [
+      {
+        "auth_index": "auth-a",
+        "failed": false,
+        "model": "gpt-4o-mini",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 33,
+      },
+      {
+        "auth_index": "auth-b",
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "k:9423da28d1ab9915",
+        "total_tokens": 15,
+      },
+    ],
+    "t:prefix-a": [
+      {
+        "auth_index": "auth-a",
+        "failed": true,
+        "model": "gpt-4o-mini",
+        "source": "t:prefix-a",
+        "total_tokens": 5,
+      },
+    ],
+    "t:prefix-b": [
+      {
+        "auth_index": 7,
+        "failed": false,
+        "model": "claude-3-7-sonnet",
+        "source": "t:prefix-b",
+        "total_tokens": 18,
+      },
+    ],
+  },
+  "candidateSlice": [
+    {
+      "auth_index": "auth-a",
+      "failed": true,
+      "model": "gpt-4o-mini",
+      "source": "t:prefix-a",
+      "total_tokens": 5,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": false,
+      "model": "gpt-4o-mini",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 33,
+    },
+    {
+      "auth_index": "auth-b",
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 15,
+    },
+  ],
+  "usageDetails": [
+    {
+      "auth_index": "auth-a",
+      "failed": false,
+      "model": "gpt-4o-mini",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 33,
+    },
+    {
+      "auth_index": "auth-a",
+      "failed": true,
+      "model": "gpt-4o-mini",
+      "source": "t:prefix-a",
+      "total_tokens": 5,
+    },
+    {
+      "auth_index": 7,
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "t:prefix-b",
+      "total_tokens": 18,
+    },
+    {
+      "auth_index": "auth-b",
+      "failed": false,
+      "model": "claude-3-7-sonnet",
+      "source": "k:9423da28d1ab9915",
+      "total_tokens": 15,
+    },
+  ],
+}
+`;

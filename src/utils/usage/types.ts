@@ -41,6 +41,9 @@ export interface UsageDetail {
   source: string;
   auth_index: string | number | null;
   latency_ms?: number;
+  latency_total_ms?: number;
+  latency_sample_count?: number;
+  request_count?: number;
   tokens: {
     input_tokens: number;
     output_tokens: number;
@@ -94,9 +97,7 @@ export interface ChartDataset {
   data: number[];
   borderColor: string;
   backgroundColor:
-    | string
-    | CanvasGradient
-    | ((context: ScriptableContext<'line'>) => string | CanvasGradient);
+    string | CanvasGradient | ((context: ScriptableContext<'line'>) => string | CanvasGradient);
   pointBackgroundColor?: string;
   pointBorderColor?: string;
   fill: boolean;

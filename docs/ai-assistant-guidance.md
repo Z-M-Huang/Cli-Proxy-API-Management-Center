@@ -29,16 +29,18 @@ Hot rules:
 ## Commands
 
 ```bash
-npm ci # Install dependencies from package-lock.json
-npm run dev # Vite dev server at http://localhost:5173
-npm run build # TypeScript plus Vite build to dist/index.html
-npm run preview # Serve dist locally
-npm run lint # ESLint, warnings fail
-npm run type-check # tsc --noEmit
-npm run format # Prettier
+bun install --frozen-lockfile # Install dependencies from bun.lock
+bun run dev # Vite dev server at http://localhost:5173
+bun run build # TypeScript plus Vite build to dist/index.html
+bun run preview # Serve dist locally
+bun run test # Bun test suite
+bun run lint # ESLint, warnings fail
+bun run verify # Test, lint, and build
+bun run type-check # tsc --noEmit
+bun run format # Prettier
 ```
 
-`npm run lint && npm run type-check && npm run build` should pass before any PR is opened.
+`bun run verify` and `bun run type-check` should pass before any PR is opened.
 
 ## Architecture
 
@@ -50,10 +52,11 @@ npm run format # Prettier
 - `src/i18n/locales/{en,zh-CN,zh-TW,ru}.json`: i18n string tables. Missing keys fall back to the literal key.
 - `src/styles/`: global SCSS plus shared mixins and variables.
 - `src/utils/`: pure utility functions with no React.
+- Usage follows a split read model: dashboard analytics consume `/usage/overview` rollups, while `src/components/usage/hooks/useUsageEvents.ts` pages request rows from `/usage/events`.
 
 ## Tech Stack Notes
 
-- React 19, TypeScript 5.9, Vite 7, Zustand, Axios, react-router-dom v7 with `HashRouter`, Chart.js, CodeMirror 6, SCSS Modules, and i18next.
+- React 19, TypeScript 6, Vite 8, Bun 1.3.14, Zustand, Axios, react-router-dom v7 with `HashRouter`, Motion, CodeMirror 6, SCSS Modules, and i18next.
 - Single-file build via `vite-plugin-singlefile` inlines assets into `dist/index.html`. Do not rely on multiple network requests after the initial HTML load.
 
 ## Code Conventions
@@ -93,26 +96,38 @@ Fork-owned files:
 - `src/pages/PromptRulesPage.module.scss`
 - `src/pages/UsagePage.tsx`
 - `src/pages/UsagePage.module.scss`
+- `src/router/forkMainRoutes.tsx`
 - `src/services/api/promptRules.ts`
 - `src/services/api/usage.ts`
 - `src/components/usage/**`
 - `src/stores/useUsageStatsStore.ts`
 - `src/pages/hooks/useTraceResolver.ts`
-- `src/utils/usage.ts`
 - `src/utils/usage/**`
 - `src/utils/usageIndex.ts`
 - `src/utils/recentRequests.ts`
+- `tests/forkRoutes.test.tsx`
+- `tests/usage-snapshots/**`
+- `tests/usageRollups.test.ts`
 
 Patched upstream files:
 
+- `src/i18n/locales/en.json`
+- `src/i18n/locales/ru.json`
+- `src/i18n/locales/zh-CN.json`
+- `src/i18n/locales/zh-TW.json`
 - `src/components/layout/MainLayout.tsx`
+- `src/components/config/VisualConfigEditor.tsx`
+- `src/components/config/configSearchIndex.ts`
 - `src/components/ui/icons.tsx`
 - `src/components/providers/ProviderStatusBar.tsx`
 - `src/router/MainRoutes.tsx`
 - `src/pages/SystemPage.tsx`
 - `src/services/api/index.ts`
+- `src/services/api/logs.ts`
+- `src/stores/index.ts`
+- `src/hooks/useVisualConfig.ts`
+- `src/types/visualConfig.ts`
 - `src/utils/quota/parsers.ts`
-- `package.json`
 
 Hard-fork triggers:
 
@@ -137,8 +152,9 @@ Use upstream as a source of selected fixes and maintenance, not as a contributio
 Current fork topics:
 
 - `prompt-rules`: route, page, API client, and layout wiring.
-- `usage`: charts, request-event analysis, source-resolution helpers, and import/export UI.
+- `usage`: rollup-backed charts and credential metrics, server-paged request events, source-resolution helpers, and import/export UI.
 - `branding`: release tags, repo links, and sidebar/system-page affordances.
+- `provider-headers`: Gemini API, OpenAI-compatible, Kimi, and Antigravity User-Agent defaults with legacy Gemini CLI config migration.
 
 ## Upstream Conflict Playbook
 
@@ -150,9 +166,9 @@ When merging `upstream/dev`, resolve conflicts by intent rather than mechanicall
 4. For overlapping routes or navigation, keep fork pages stable and add upstream routes alongside them when they serve different users.
 5. For API client conflicts, keep the backend contract stable for fork-only endpoints, but reuse upstream client helpers or response normalization when upstream improves the shared pattern.
 6. For i18n conflicts, keep fork-specific wording and add any new upstream keys to all four locale files: `en`, `zh-CN`, `zh-TW`, and `ru`.
-7. For package manifests, resolve `package.json` first, then regenerate `package-lock.json` with `npm install --package-lock-only` when dependencies changed. Do not hand-edit lockfile internals except to resolve an already-equivalent merge.
+7. For package manifests, resolve `package.json` first, then regenerate `bun.lock` with Bun 1.3.14. Do not hand-edit lockfile internals.
 8. For conflicts outside the customization surface, stop and understand why the overlap exists before resolving it. Treat repeated conflicts in the same area as a signal to extract a fork-owned component, hook, or helper.
-9. Run `npm run lint`, `npm run type-check`, and `npm run build`; add `npm run test` when tests or shared UI logic changed.
+9. Run `bun run verify` and `bun run type-check`.
 10. In the sync PR, document each non-trivial conflict as `kept fork`, `took upstream`, or `adapted both`, with a one-line rationale.
 
 ## Pointers

@@ -1,4 +1,5 @@
 import { maskApiKey } from '../format';
+import { getUsageRequestCount } from './details';
 import { normalizeAuthIndex, normalizeUsageSourceId } from './identity';
 import type { KeyStatBucket, KeyStats, UsageDetail } from './types';
 
@@ -45,22 +46,23 @@ export function computeKeyStats(
         const source = normalizeUsageSourceId(detailRecord?.source, masker);
         const authIndexKey = normalizeAuthIndex(detailRecord?.auth_index);
         const isFailed = detailRecord?.failed === true;
+        const requestCount = getUsageRequestCount(detailRecord);
 
         if (source) {
           const bucket = ensureBucket(sourceStats, source);
           if (isFailed) {
-            bucket.failure += 1;
+            bucket.failure += requestCount;
           } else {
-            bucket.success += 1;
+            bucket.success += requestCount;
           }
         }
 
         if (authIndexKey) {
           const bucket = ensureBucket(authIndexStats, authIndexKey);
           if (isFailed) {
-            bucket.failure += 1;
+            bucket.failure += requestCount;
           } else {
-            bucket.success += 1;
+            bucket.success += requestCount;
           }
         }
       });
@@ -88,22 +90,23 @@ export function computeKeyStatsFromDetails(usageDetails: UsageDetail[]): KeyStat
     const source = detail.source;
     const authIndexKey = normalizeAuthIndex(detail.auth_index);
     const isFailed = detail.failed === true;
+    const requestCount = getUsageRequestCount(detail);
 
     if (source) {
       const bucket = ensureBucket(bySource, source);
       if (isFailed) {
-        bucket.failure += 1;
+        bucket.failure += requestCount;
       } else {
-        bucket.success += 1;
+        bucket.success += requestCount;
       }
     }
 
     if (authIndexKey) {
       const bucket = ensureBucket(byAuthIndex, authIndexKey);
       if (isFailed) {
-        bucket.failure += 1;
+        bucket.failure += requestCount;
       } else {
-        bucket.success += 1;
+        bucket.success += requestCount;
       }
     }
   });

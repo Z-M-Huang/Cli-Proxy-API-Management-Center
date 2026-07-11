@@ -84,7 +84,7 @@ export const useUsageStatsStore = create<UsageStatsState>((set, get) => ({
         usageDetails: [],
         error: null,
         lastRefreshedAt: null,
-        scopeKey
+        scopeKey,
       });
     }
 
@@ -93,7 +93,7 @@ export const useUsageStatsStore = create<UsageStatsState>((set, get) => ({
 
     const requestPromise = (async () => {
       try {
-        const usageResponse = await usageApi.getUsage();
+        const usageResponse = await usageApi.getUsageOverview();
         const rawUsage = usageResponse?.usage ?? usageResponse;
         const usage =
           rawUsage && typeof rawUsage === 'object' ? (rawUsage as UsageStatsSnapshot) : null;
@@ -108,7 +108,7 @@ export const useUsageStatsStore = create<UsageStatsState>((set, get) => ({
           loading: false,
           error: null,
           lastRefreshedAt: Date.now(),
-          scopeKey
+          scopeKey,
         });
       } catch (error: unknown) {
         if (requestId !== usageRequestToken) return;
@@ -116,9 +116,9 @@ export const useUsageStatsStore = create<UsageStatsState>((set, get) => ({
         set({
           loading: false,
           error: message,
-          scopeKey
+          scopeKey,
         });
-        throw new Error(message);
+        throw error;
       } finally {
         if (inFlightUsageRequest?.id === requestId) {
           inFlightUsageRequest = null;
@@ -140,7 +140,7 @@ export const useUsageStatsStore = create<UsageStatsState>((set, get) => ({
       loading: false,
       error: null,
       lastRefreshedAt: null,
-      scopeKey: ''
+      scopeKey: '',
     });
-  }
+  },
 }));

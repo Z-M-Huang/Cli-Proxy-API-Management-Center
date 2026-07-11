@@ -3,7 +3,7 @@
  *
  * Backed by /v0/management/prompt-rules on the proxy. Rules apply pre-translation
  * to source-format request bodies — the operator scopes them by model glob and
- * source format ("openai", "openai-response", "claude", "gemini", "gemini-cli").
+ * source format ("openai", "openai-response", "claude", "gemini", "interactions").
  */
 
 import { apiClient } from './client';
@@ -67,5 +67,5 @@ export const PROMPT_RULE_SOURCE_FORMATS: ReadonlyArray<{ value: string; label: s
   { value: 'openai-response', label: 'OpenAI Responses' },
   { value: 'claude', label: 'Anthropic Messages' },
   { value: 'gemini', label: 'Gemini' },
-  { value: 'gemini-cli', label: 'Gemini CLI' },
+  { value: 'interactions', label: 'Google Interactions' },
 ] as const;

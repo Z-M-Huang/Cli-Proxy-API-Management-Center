@@ -396,11 +396,7 @@ export function UsagePage() {
         <ModelStatsCard modelStats={modelStats} loading={loading} hasPrices={hasPrices} />
       </div>
 
-      <RequestEventsDetailsCard
-        usageDetails={filteredUsageDetails}
-        loading={loading}
-        sourceInfoMap={sourceInfoMap}
-      />
+      <RequestEventsDetailsCard timeRange={timeRange} sourceInfoMap={sourceInfoMap} />
 
       {/* Credential Stats */}
       <CredentialStatsCard

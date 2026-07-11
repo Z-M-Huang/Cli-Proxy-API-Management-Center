@@ -43,6 +43,7 @@ export interface UsageEventsResponse {
   events?: UsageEventRecord[];
   models?: string[];
   sources?: string[];
+  auth_indexes?: string[];
   total_count?: number;
   page?: number;
   page_size?: number;
@@ -57,7 +58,14 @@ export interface UsageEventsParams {
   end_time?: string;
   model?: string;
   source?: string;
+  auth_index?: string;
   result?: 'success' | 'failed';
+}
+
+export interface UsageEventFiltersResponse {
+  models?: string[];
+  sources?: string[];
+  auth_indexes?: string[];
 }
 
 export const usageApi = {
@@ -65,6 +73,12 @@ export const usageApi = {
    * 获取使用统计原始数据
    */
   getUsage: () => apiClient.get<Record<string, unknown>>('/usage', { timeout: USAGE_TIMEOUT_MS }),
+
+  /**
+   * 获取由持久化汇总表生成的使用统计
+   */
+  getUsageOverview: () =>
+    apiClient.get<Record<string, unknown>>('/usage/overview', { timeout: USAGE_TIMEOUT_MS }),
 
   /**
    * 获取持久化使用事件
@@ -76,15 +90,16 @@ export const usageApi = {
    * 获取持久化使用事件筛选项
    */
   getUsageEventFilters: (params?: Pick<UsageEventsParams, 'start_time' | 'end_time'>) =>
-    apiClient.get<{ models?: string[]; sources?: string[] }>('/usage/events/filters', {
+    apiClient.get<UsageEventFiltersResponse>('/usage/events/filters', {
       params,
-      timeout: USAGE_TIMEOUT_MS
+      timeout: USAGE_TIMEOUT_MS,
     }),
 
   /**
    * 导出使用统计快照
    */
-  exportUsage: () => apiClient.get<UsageExportPayload>('/usage/export', { timeout: USAGE_TIMEOUT_MS }),
+  exportUsage: () =>
+    apiClient.get<UsageExportPayload>('/usage/export', { timeout: USAGE_TIMEOUT_MS }),
 
   /**
    * 导入使用统计快照
@@ -98,9 +113,9 @@ export const usageApi = {
   async getKeyStats(usageData?: unknown): Promise<KeyStats> {
     let payload = usageData;
     if (!payload) {
-      const response = await apiClient.get<Record<string, unknown>>('/usage', { timeout: USAGE_TIMEOUT_MS });
+      const response = await usageApi.getUsageOverview();
       payload = response?.usage ?? response;
     }
     return computeKeyStats(payload);
-  }
+  },
 };
