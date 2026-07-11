@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { usePoll } from '@/hooks/usePoll';
+import { useInterval } from '@/hooks/useInterval';
 import { apiKeyUsageApi } from '@/services/api';
 import {
   normalizeRecentRequestUsageEntry,
@@ -21,7 +21,10 @@ let cachedUsageByProvider: ProviderRecentRequests = EMPTY_USAGE_BY_PROVIDER;
 let cachedAt = 0;
 let inFlightRequest: Promise<ProviderRecentRequests> | null = null;
 
-const normalizeProviderKey = (value: unknown): string => String(value ?? '').trim().toLowerCase();
+const normalizeProviderKey = (value: unknown): string =>
+  String(value ?? '')
+    .trim()
+    .toLowerCase();
 
 const normalizeApiKeyUsageResponse = (payload: ApiKeyUsageResponse): ProviderRecentRequests => {
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
@@ -47,12 +50,10 @@ const normalizeApiKeyUsageResponse = (payload: ApiKeyUsageResponse): ProviderRec
   return usageByProvider;
 };
 
-const fetchProviderRecentRequests = async (
-  signal?: AbortSignal
-): Promise<ProviderRecentRequests> => {
+const fetchProviderRecentRequests = async (): Promise<ProviderRecentRequests> => {
   if (!inFlightRequest) {
     inFlightRequest = apiKeyUsageApi
-      .getUsage({ signal })
+      .getUsage()
       .then((payload) => {
         const normalized = normalizeApiKeyUsageResponse(payload);
         cachedUsageByProvider = normalized;
@@ -69,22 +70,18 @@ const fetchProviderRecentRequests = async (
 
 export function useProviderRecentRequests(options: UseProviderRecentRequestsOptions = {}) {
   const enabled = options.enabled ?? true;
-  const [usageByProvider, setUsageByProvider] = useState<ProviderRecentRequests>(
-    cachedUsageByProvider
-  );
+  const [usageByProvider, setUsageByProvider] =
+    useState<ProviderRecentRequests>(cachedUsageByProvider);
   const [isLoading, setIsLoading] = useState(false);
 
   const loadRecentRequests = useCallback(
-    async (
-      loadOptions: { force?: boolean; signal?: AbortSignal } = {}
-    ) => {
+    async (loadOptions: { force?: boolean } = {}) => {
       if (!enabled) {
         return EMPTY_USAGE_BY_PROVIDER;
       }
 
       const hasFreshCache =
-        cachedAt > 0 &&
-        Date.now() - cachedAt < PROVIDER_RECENT_REQUESTS_STALE_TIME_MS;
+        cachedAt > 0 && Date.now() - cachedAt < PROVIDER_RECENT_REQUESTS_STALE_TIME_MS;
 
       if (!loadOptions.force && hasFreshCache) {
         setUsageByProvider(cachedUsageByProvider);
@@ -93,7 +90,7 @@ export function useProviderRecentRequests(options: UseProviderRecentRequestsOpti
 
       setIsLoading(true);
       try {
-        const nextUsage = await fetchProviderRecentRequests(loadOptions.signal);
+        const nextUsage = await fetchProviderRecentRequests();
         setUsageByProvider(nextUsage);
         return nextUsage;
       } catch {
@@ -109,17 +106,21 @@ export function useProviderRecentRequests(options: UseProviderRecentRequestsOpti
   );
 
   const refreshRecentRequests = useCallback(
-    async (signal?: AbortSignal) => loadRecentRequests({ force: true, signal }),
+    async () => loadRecentRequests({ force: true }),
     [loadRecentRequests]
   );
 
   useEffect(() => {
-    setUsageByProvider(enabled ? cachedUsageByProvider : EMPTY_USAGE_BY_PROVIDER);
-  }, [enabled]);
+    if (!enabled) {
+      setUsageByProvider(EMPTY_USAGE_BY_PROVIDER);
+      return;
+    }
+    void loadRecentRequests().catch(() => {});
+  }, [enabled, loadRecentRequests]);
 
-  usePoll(
-    (signal) => {
-      void refreshRecentRequests(signal).catch(() => {});
+  useInterval(
+    () => {
+      void refreshRecentRequests().catch(() => {});
     },
     enabled ? PROVIDER_RECENT_REQUESTS_STALE_TIME_MS : null
   );

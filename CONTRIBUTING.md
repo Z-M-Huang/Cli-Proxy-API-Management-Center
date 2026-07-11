@@ -6,7 +6,7 @@ If you're a human collaborator or an AI coding assistant, **read this before ope
 
 ## Goals
 
-1. **Ship our own UI features** for the fork's backend (currently: **Prompt Rules** management page; revived logging UI planned for v0.2.0).
+1. **Ship our own UI features** for the fork's backend: **Prompt Rules**, persistent **Usage** analytics/request history, and configurable provider header defaults.
 2. **Track upstream's improvements** so we benefit from their UI/UX work without duplicating it. We do this by selectively merging or cherry-picking from `upstream/dev` into our `dev`.
 3. **Stay non-disruptive to upstream.** We don't open PRs against `router-for-me/*` — upstream merge is no longer the goal.
 
@@ -21,7 +21,6 @@ main  ←─[fast-forward]──  dev  ←─[merge]──  feat/<your-feature>
 - **`main`** is the default browse-branch. Always equals (or trails by a tag) `dev`. Don't commit to `main` directly; fast-forward from `dev` when releasing.
 - **`dev`** is the integration branch. All feature work and upstream sync land here.
 - **`feat/<short-name>`** is where you do your work. Cut from `dev`, PR back into `dev`.
-- **`feat/logging`** is reserved for the deferred v0.2.0 logging UI effort. Don't reuse the name.
 
 ## Workflow: starting a new feature
 
@@ -65,12 +64,14 @@ Conflicts during a sync are expected only in the customization surface below. **
 These are the files where the fork diverges from upstream. When syncing upstream, conflicts here are normal — keep our version. Everywhere else, take upstream's.
 
 - `.github/workflows/release.yml` — tag trigger is `zmh-v*` (not `v*`); `runs-on: self-hosted`.
-- `src/components/config/VisualConfigEditor.tsx` — `panel-github-repository` placeholder points at our fork.
+- `src/components/config/VisualConfigEditor.tsx`, `src/components/config/configSearchIndex.ts`, `src/hooks/useVisualConfig.ts`, `src/types/visualConfig.ts` — fork release-feed branding plus Gemini API, OpenAI-compatible, Kimi, and Antigravity header defaults.
 - `src/pages/SystemPage.tsx` — quick-link cards point at our fork (the docs link still goes to `help.router-for.me` and is intentionally labeled as upstream).
-- `src/i18n/locales/{en,zh-CN,zh-TW,ru}.json` — `link_docs` / `link_docs_desc` labeled as upstream-hosted; `prompt_rules.*` keys for the fork-only feature.
+- `src/i18n/locales/{en,zh-CN,zh-TW,ru}.json` — upstream keys plus fork navigation, `prompt_rules.*`, `usage_stats.*`, and provider-header strings.
 - `src/pages/PromptRulesPage.{tsx,module.scss}` — fork-only feature page.
+- `src/pages/UsagePage.{tsx,module.scss}`, `src/components/usage/**` — rollup-backed analytics, server-paged request events, and request-history UI.
 - `src/services/api/promptRules.ts` — fork-only API client.
-- `src/router/MainRoutes.tsx`, `src/components/layout/MainLayout.tsx`, `src/services/api/index.ts` — minor fork-feature wiring.
+- `src/services/api/usage.ts`, `src/stores/useUsageStatsStore.ts`, `src/utils/usage/**`, `src/utils/usageIndex.ts`, `src/utils/recentRequests.ts`, `tests/usageRollups.test.ts` — usage API, state, weighted rollup aggregation, source resolution, and regression coverage.
+- `src/router/forkMainRoutes.tsx`, `src/router/MainRoutes.tsx`, `src/components/layout/MainLayout.tsx`, `src/components/ui/icons.tsx`, `src/services/api/index.ts`, `src/stores/index.ts` — isolated fork routes and minor fork-feature wiring.
 - `README.md`, `README_CN.md` — fork notice block at the top.
 - `AGENTS.md`, `CLAUDE.md`, `docs/ai-assistant-guidance.md` — shared assistant guidance and imports.
 
@@ -87,14 +88,14 @@ The release tag is `zmh-vX.Y.Z` (the `zmh-` prefix avoids colliding with upstrea
    git tag zmh-v0.X.Y
    git push origin zmh-v0.X.Y
    ```
-3. The `zmh-v*` tag triggers `.github/workflows/release.yml` on the fork's self-hosted runner. The workflow runs `npm ci && npm run build` and publishes `dist/management.html` as a GitHub Release asset.
+3. The `zmh-v*` tag triggers `.github/workflows/release.yml` on the fork's self-hosted runner. The workflow installs Bun 1.3.14, runs `bun install --frozen-lockfile` and `bun run build`, then publishes `dist/management.html` as a GitHub Release asset.
 4. The matching backend release in [Z-M-Huang/CLIProxyAPI](https://github.com/Z-M-Huang/CLIProxyAPI) at the same `zmh-vX.Y.Z` tag will fetch this `management.html` automatically via the auto-updater.
 
 ## Things this fork deliberately does NOT do
 
 - We don't open PRs against `router-for-me/Cli-Proxy-API-Management-Center` or `router-for-me/CLIProxyAPI`.
 - We don't use the bare `vX.Y.Z` tag namespace — always `zmh-vX.Y.Z`.
-- We don't carry upstream's affiliate/sponsor links in the rebrand commits.
+- We don't present upstream provider/affiliate integrations as sponsorships of this fork; links retained by the upstream provider workbench remain upstream-owned functionality.
 - We don't run `release.yml` on GitHub-hosted runners; it's pinned to `self-hosted`.
 
 ## Fork boundary guard
@@ -103,6 +104,5 @@ The release tag is `zmh-vX.Y.Z` (the `zmh-` prefix avoids colliding with upstrea
 
 ## Pointers
 
-- Plan / decision history: `/home/ubuntu/.claude/plans/we-are-in-a-nested-emerson.md` (local-only).
 - Upstream: <https://github.com/router-for-me/Cli-Proxy-API-Management-Center>.
 - Backend fork: <https://github.com/Z-M-Huang/CLIProxyAPI> (local sibling checkout: `../CLIProxyAPI`).

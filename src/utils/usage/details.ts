@@ -66,6 +66,12 @@ const toUsageSummaryFields = (summary: UsageSummary) => ({
   total_tokens: summary.totalTokens,
 });
 
+export function getUsageRequestCount(detail: unknown): number {
+  const record = isRecord(detail) ? detail : null;
+  const count = Number(record?.request_count);
+  return Number.isFinite(count) && count > 0 ? Math.floor(count) : 1;
+}
+
 export function filterUsageByTimeRange<T>(
   usageData: T,
   range: UsageTimeRange,
@@ -124,11 +130,12 @@ export function filterUsageByTimeRange<T>(
         }
 
         filteredDetails.push(detail);
-        modelSummary.totalRequests += 1;
+        const requestCount = getUsageRequestCount(detailRecord);
+        modelSummary.totalRequests += requestCount;
         if (detailRecord.failed === true) {
-          modelSummary.failureCount += 1;
+          modelSummary.failureCount += requestCount;
         } else {
-          modelSummary.successCount += 1;
+          modelSummary.successCount += requestCount;
         }
         modelSummary.totalTokens += extractTotalTokens(detailRecord);
       });
@@ -218,6 +225,9 @@ export function collectUsageDetails(usageData: unknown): UsageDetail[] {
         const timestampMs = parseTimestampMs(timestamp);
         const tokensRaw = isRecord(detailRaw.tokens) ? detailRaw.tokens : {};
         const latencyMs = extractLatencyMs(detailRaw);
+        const latencyTotalMs = Number(detailRaw.latency_total_ms);
+        const latencySampleCount = Number(detailRaw.latency_sample_count);
+        const requestCount = Number(detailRaw.request_count);
         const requestIdRaw = detailRaw.request_id ?? detailRaw.requestId;
         const requestId =
           typeof requestIdRaw === 'string' && requestIdRaw.trim() !== ''
@@ -231,6 +241,11 @@ export function collectUsageDetails(usageData: unknown): UsageDetail[] {
             detailRaw?.AuthIndex ??
             null) as UsageDetail['auth_index'],
           latency_ms: latencyMs ?? undefined,
+          latency_total_ms: Number.isFinite(latencyTotalMs) ? latencyTotalMs : undefined,
+          latency_sample_count: Number.isFinite(latencySampleCount)
+            ? latencySampleCount
+            : undefined,
+          request_count: Number.isFinite(requestCount) ? requestCount : undefined,
           tokens: tokensRaw as unknown as UsageDetail['tokens'],
           thinking: normalizeUsageThinking(detailRaw.thinking),
           failed: detailRaw.failed === true,
@@ -298,6 +313,9 @@ export function collectUsageDetailsWithEndpoint(usageData: unknown): UsageDetail
         const timestampMs = parseTimestampMs(timestamp);
         const tokensRaw = isRecord(detailRaw.tokens) ? detailRaw.tokens : {};
         const latencyMs = extractLatencyMs(detailRaw);
+        const latencyTotalMs = Number(detailRaw.latency_total_ms);
+        const latencySampleCount = Number(detailRaw.latency_sample_count);
+        const requestCount = Number(detailRaw.request_count);
         const requestIdRaw = detailRaw.request_id ?? detailRaw.requestId;
         const requestId =
           typeof requestIdRaw === 'string' && requestIdRaw.trim() !== ''
@@ -311,6 +329,11 @@ export function collectUsageDetailsWithEndpoint(usageData: unknown): UsageDetail
             detailRaw?.AuthIndex ??
             null) as UsageDetail['auth_index'],
           latency_ms: latencyMs ?? undefined,
+          latency_total_ms: Number.isFinite(latencyTotalMs) ? latencyTotalMs : undefined,
+          latency_sample_count: Number.isFinite(latencySampleCount)
+            ? latencySampleCount
+            : undefined,
+          request_count: Number.isFinite(requestCount) ? requestCount : undefined,
           tokens: tokensRaw as unknown as UsageDetail['tokens'],
           thinking: normalizeUsageThinking(detailRaw.thinking),
           failed: detailRaw.failed === true,

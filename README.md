@@ -4,11 +4,11 @@ A single-file Web UI (React + TypeScript) for operating and troubleshooting the 
 
 [中文文档](README_CN.md)
 
-> **Fork notice.** This is [Z-M-Huang's](https://github.com/Z-M-Huang) fork of [router-for-me/Cli-Proxy-API-Management-Center](https://github.com/router-for-me/Cli-Proxy-API-Management-Center). It carries the management UI for the fork's extra features (currently: **Prompt Rules**; revived logging UI planned for v0.2.0). Paired with the matching backend fork at [Z-M-Huang/CLIProxyAPI](https://github.com/Z-M-Huang/CLIProxyAPI), which republishes the docker image at `zhironghuang/cli-proxy-api`. Upstream improvements are merged in periodically.
+> **Fork notice.** This is [Z-M-Huang's](https://github.com/Z-M-Huang) fork of [router-for-me/Cli-Proxy-API-Management-Center](https://github.com/router-for-me/Cli-Proxy-API-Management-Center). It keeps upstream's current provider workbench and plugin UI while adding **Prompt Rules**, persistent **Usage** analytics/request history, and configurable provider header defaults for the matching [Z-M-Huang/CLIProxyAPI](https://github.com/Z-M-Huang/CLIProxyAPI) backend fork.
 
 **Main Project**: https://github.com/Z-M-Huang/CLIProxyAPI  
 **Upstream**: https://github.com/router-for-me/CLIProxyAPI  
-**Minimum Required Version**: ≥ 6.8.0 (recommended ≥ 6.8.15)
+**Minimum Required Version**: ≥ 7.1.0 (recommended latest fork release)
 
 Since version 6.0.19, the Web UI ships with the main program; access it via `/management.html` on the API port once the service is running.
 
@@ -30,8 +30,8 @@ The address is auto-detected from the current page URL; manual override is suppo
 ### Option B: Run the dev server
 
 ```bash
-npm install
-npm run dev
+bun install --frozen-lockfile
+bun run dev
 ```
 
 Open `http://localhost:5173`, then connect to your CLI Proxy API backend instance.
@@ -39,13 +39,13 @@ Open `http://localhost:5173`, then connect to your CLI Proxy API backend instanc
 ### Option C: Build a single HTML file
 
 ```bash
-npm install
-npm run build
+bun install --frozen-lockfile
+bun run build
 ```
 
 - Output: `dist/index.html` (all assets are inlined).
 - For CLI Proxy API bundling, the release workflow renames it to `management.html`.
-- To preview locally: `npm run preview`
+- To preview locally: `bun run preview`
 
 Tip: opening `dist/index.html` via `file://` may be blocked by browser CORS; serving it (preview/static server) is more reliable.
 
@@ -70,35 +70,32 @@ This is different from the proxy `api-keys` you manage inside the UI (those are 
 
 ### Remote management
 
-If you connect from a non-localhost browser, the server must allow remote management (e.g. `allow-remote-management: true`).  
-See `api.md` for the full authentication rules, server-side limits, and edge cases.
+If you connect from a non-localhost browser, enable `remote-management.allow-remote` in the backend configuration. Check the backend documentation and `config.example.yaml` for authentication rules and limits.
 
 ## What you can manage (mapped to the UI pages)
 
 - **Dashboard**: connection status, server version/build date, quick counts, model availability snapshot.
-- **Basic Settings**: debug, proxy URL, request retry, quota fallback (switch project or preview models when limits reached), usage statistics, request logging, file logging, WebSocket auth.
-- **API Keys**: manage proxy `api-keys` (add/edit/delete).
+- **Config Panel**: visually edit common `config.yaml` fields, proxy `api-keys`, provider header defaults, and plugin settings; source mode adds YAML highlighting, search, and a save diff preview.
 - **AI Providers**:
-  - Gemini/Codex/Claude/Vertex key entries (base URL, headers, proxy, model aliases, excluded models, prefix).
-  - OpenAI-compatible providers (multiple API keys, custom headers, model alias import via `/v1/models`, optional browser-side "chat/completions" test).
-  - Ampcode integration (upstream URL/key, force mappings, model mapping table).
+  - The upstream provider workbench manages Gemini, Codex, Claude, Vertex, OpenAI-compatible, and supported sponsor-provider resources.
+  - Provider sheets handle keys, headers, proxies, model aliases, excluded models, discovery, and connectivity checks where supported.
 - **Auth Files**: upload/download/delete JSON credentials, filter/search/pagination, runtime-only indicators, view supported models per credential (when the server supports it), manage OAuth excluded models (supports `*` wildcards), configure OAuth model alias mappings.
 - **Prompt Rules**: inject standing text into outgoing system prompts or last natural-language user messages, or strip unwanted boilerplate via RE2 regex. Rules are scoped by model glob and source format, applied pre-translation, and remain idempotent across requests. Marker is optional: when set it acts as an anchor (Position is relative to the marker); when empty the rule appends/prepends at the target boundary.
-- **OAuth**: start OAuth/device flows for supported providers, poll status, optionally submit callback `redirect_url`; includes iFlow cookie import.
-- **Quota Management**: manage quota limits and usage for Claude, Antigravity, Codex, Gemini CLI, and other providers.
+- **OAuth**: start and monitor supported Codex, Claude, Antigravity, Kimi, and xAI/Grok flows; import Vertex JSON credentials and iFlow cookies.
+- **Quota Management**: inspect quotas for Claude, Antigravity, Codex, Kimi, xAI/Grok, and other supported providers.
+- **Plugins / Plugin Store**: enable installed plugins, edit their resources, and discover compatible releases.
 - **Usage**: requests/tokens charts (hour/day), per-API & per-model breakdown, cached/reasoning token breakdown, RPM/TPM window, optional cost estimation with locally-saved model pricing.
-- **Config**: edit `/config.yaml` in-browser with YAML highlighting + search, then save/reload.
 - **Logs**: tail logs with incremental polling, auto-refresh, search, hide management traffic, clear logs; download request error log files.
-- **System**: quick links + fetch `/v1/models` (grouped view). Requires at least one proxy API key to query models.
+- **System**: quick links, update checks, request logging control, local login-data cleanup, and grouped `/v1/models` output.
 
 ## Tech Stack
 
-- React 19 + TypeScript 5.9
-- Vite 7 (single-file build)
+- React 19 + TypeScript 6.0
+- Vite 8 (single-file build)
 - Zustand (state management)
 - Axios (HTTP client)
 - react-router-dom v7 (HashRouter)
-- Chart.js (data visualization)
+- Motion (animations)
 - CodeMirror 6 (YAML editor)
 - SCSS Modules (styling)
 - i18next (internationalization)
@@ -112,7 +109,7 @@ Currently supports four languages:
 - Traditional Chinese (zh-TW)
 - Russian (ru)
 
-The UI language is automatically detected from browser settings and can be manually switched at the bottom of the page.
+The UI language is automatically detected from browser settings and can be manually switched from the login page or header language menu.
 
 ## Browser Compatibility
 
@@ -124,7 +121,7 @@ The UI language is automatically detected from browser settings and can be manua
 
 - Vite produces a **single HTML** output (`dist/index.html`) with all assets inlined (via `vite-plugin-singlefile`).
 - Tagging `zmh-vX.Y.Z` triggers `.github/workflows/release.yml` to publish `dist/management.html`. The `zmh-v` prefix avoids the upstream tag namespace.
-- The UI version shown in the footer is injected at build time (env `VERSION`, git tag, or `package.json` fallback).
+- The UI version shown on the System page is injected at build time (env `VERSION`, git tag, or `package.json` fallback).
 
 ## Security notes
 
@@ -135,24 +132,26 @@ The UI language is automatically detected from browser settings and can be manua
 
 - **Can’t connect / 401**: confirm the API address and management key; remote access may require enabling remote management in the server config.
 - **Repeated auth failures**: the server may temporarily block remote IPs.
-- **Logs page missing**: enable “Logging to file” in Basic Settings; the navigation item is shown only when file logging is enabled.
+- **Logs page missing**: enable “Logging to file” in the Config Panel; the navigation item is shown only when file logging is enabled.
 - **Some features show “unsupported”**: the backend may be too old or the endpoint is disabled/absent (common for model lists per auth file, excluded models, logs).
 - **OpenAI provider test fails**: the test runs in the browser and depends on network/CORS of the provider endpoint; a failure here does not always mean the server cannot reach it.
 
 ## Development
 
 ```bash
-npm run dev        # Vite dev server
-npm run build      # tsc + Vite build
-npm run preview    # serve dist locally
-npm run lint       # ESLint (fails on warnings)
-npm run format     # Prettier
-npm run type-check # tsc --noEmit
+bun run dev        # Vite dev server
+bun run build      # tsc + Vite build
+bun run preview    # serve dist locally
+bun run test       # Bun test suite
+bun run lint       # ESLint (fails on warnings)
+bun run verify     # test + lint + build
+bun run format     # Prettier
+bun run type-check # tsc --noEmit
 ```
 
 ## Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for the fork-specific branch model, upstream-sync workflow, customization surface, and release process. PRs land in this repo's `dev` branch (not upstream); please include reproduction steps (backend version + UI version), screenshots for UI changes, and verification notes (`npm run lint`, `npm run type-check`, `npm run build`).
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for the fork-specific branch model, upstream-sync workflow, customization surface, and release process. PRs land in this repo's `dev` branch; include reproduction steps, UI screenshots where relevant, and `bun run verify` results.
 
 ## License
 

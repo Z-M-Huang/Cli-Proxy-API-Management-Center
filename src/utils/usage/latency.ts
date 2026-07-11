@@ -118,6 +118,20 @@ export const addLatencySample = (
   accumulator.sampleCount += 1;
 };
 
+export const addLatencyDetail = (accumulator: LatencyAccumulator, detail: unknown): void => {
+  const record = isRecord(detail) ? detail : null;
+  const sampleCount = Number(record?.latency_sample_count);
+  if (Number.isFinite(sampleCount) && sampleCount > 0) {
+    const totalMs = Number(record?.latency_total_ms ?? 0);
+    if (Number.isFinite(totalMs) && totalMs >= 0) {
+      accumulator.totalMs += totalMs;
+      accumulator.sampleCount += Math.floor(sampleCount);
+      return;
+    }
+  }
+  addLatencySample(accumulator, extractLatencyMs(detail));
+};
+
 export const finalizeLatencyStats = (accumulator: LatencyAccumulator): LatencyStats => ({
   averageMs: accumulator.sampleCount > 0 ? accumulator.totalMs / accumulator.sampleCount : null,
   totalMs: accumulator.sampleCount > 0 ? accumulator.totalMs : null,
@@ -130,7 +144,7 @@ export const finalizeLatencyStats = (accumulator: LatencyAccumulator): LatencySt
 export function calculateLatencyStatsFromDetails(details: Iterable<unknown>): LatencyStats {
   const accumulator = createLatencyAccumulator();
   for (const detail of details) {
-    addLatencySample(accumulator, extractLatencyMs(detail));
+    addLatencyDetail(accumulator, detail);
   }
   return finalizeLatencyStats(accumulator);
 }
