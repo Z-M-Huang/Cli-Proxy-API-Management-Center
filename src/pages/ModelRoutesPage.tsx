@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { IconPencil, IconPlus, IconRefreshCw, IconTrash2 } from '@/components/ui/icons';
+import { useProviderWorkbench } from '@/features/providers/useProviderWorkbench';
+import type { ProviderResource } from '@/features/providers/types';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
 import {
   modelRoutesApi,
@@ -28,6 +30,11 @@ interface EditorState {
   originalAlias: string | null;
   saving: boolean;
   error: string;
+}
+
+interface ModelTargetOption {
+  value: string;
+  label: string;
 }
 
 let modelUidCounter = 0;
@@ -74,6 +81,18 @@ const strategyLabelKey = (strategy: ModelRoute['strategy']): string =>
     ? 'model_routes.strategy_round_robin'
     : 'model_routes.strategy_priority';
 
+const providerLabel = (
+  resource: ProviderResource,
+  brandLabel: string,
+  fallbackLabel: string
+): string => {
+  const name = resource.name?.trim();
+  if (name) return name;
+  const identifier = resource.identifier.trim();
+  if (identifier && !identifier.startsWith('#')) return `${brandLabel} ${identifier}`;
+  return identifier ? `${brandLabel} ${identifier}` : fallbackLabel;
+};
+
 const iconText = (icon: ReactElement, label: string) => (
   <span className={styles.buttonContent}>
     {icon}
@@ -85,6 +104,11 @@ export function ModelRoutesPage() {
   const { t } = useTranslation();
   const showNotification = useNotificationStore((state) => state.showNotification);
   const connectionStatus = useAuthStore((state) => state.connectionStatus);
+  const {
+    snapshot: providerSnapshot,
+    isFetching: providerModelsFetching,
+    refetch: refetchProviders,
+  } = useProviderWorkbench();
   const disabled = connectionStatus !== 'connected';
 
   const [routes, setRoutes] = useState<ModelRoute[]>([]);
@@ -113,12 +137,16 @@ export function ModelRoutesPage() {
     }
   }, [t]);
 
-  useHeaderRefresh(load);
+  const refreshAll = useCallback(async () => {
+    await Promise.all([load(), refetchProviders()]);
+  }, [load, refetchProviders]);
+
+  useHeaderRefresh(refreshAll);
   useEffect(() => {
-    load().catch(() => {
+    refreshAll().catch(() => {
       // surfaced via state.error
     });
-  }, [load]);
+  }, [refreshAll]);
 
   const strategyOptions = useMemo(
     () =>
@@ -132,6 +160,59 @@ export function ModelRoutesPage() {
   const sortedRoutes = useMemo(
     () => [...routes].sort((a, b) => a.alias.localeCompare(b.alias)),
     [routes]
+  );
+  const providerGroups = providerSnapshot?.groups;
+
+  const modelTargetOptions = useMemo<ModelTargetOption[]>(() => {
+    const providersByModel = new Map<string, { value: string; providers: Set<string> }>();
+    const snapshotGroups = providerGroups ?? [];
+
+    snapshotGroups.forEach((group) => {
+      const fallbackBrandLabel = t(`providersPage.providerNames.${group.id}`);
+      group.resources.forEach((resource) => {
+        const provider = providerLabel(resource, fallbackBrandLabel, fallbackBrandLabel);
+        resource.models.forEach((model) => {
+          const value = model.trim();
+          if (!value) return;
+          const key = value.toLowerCase();
+          const entry = providersByModel.get(key) ?? { value, providers: new Set<string>() };
+          entry.providers.add(provider);
+          providersByModel.set(key, entry);
+        });
+      });
+    });
+
+    (editor.route.models ?? []).forEach((model) => {
+      const value = model.trim();
+      if (!value) return;
+      const key = value.toLowerCase();
+      if (!providersByModel.has(key)) {
+        providersByModel.set(key, {
+          value,
+          providers: new Set([t('model_routes.saved_model_provider')]),
+        });
+      }
+    });
+
+    return Array.from(providersByModel.values())
+      .map((entry) => ({
+        value: entry.value,
+        label: `${Array.from(entry.providers).sort().join(', ')} - ${entry.value}`,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [editor.route.models, providerGroups, t]);
+
+  const selectedModelKeys = useMemo(
+    () =>
+      new Set(
+        (editor.route.models ?? []).map((model) => model.trim().toLowerCase()).filter(Boolean)
+      ),
+    [editor.route.models]
+  );
+
+  const hasAvailableModelTargetOption = useMemo(
+    () => modelTargetOptions.some((option) => !selectedModelKeys.has(option.value.toLowerCase())),
+    [modelTargetOptions, selectedModelKeys]
   );
 
   const openCreate = useCallback(() => {
@@ -172,13 +253,30 @@ export function ModelRoutesPage() {
   );
 
   const addModelEntry = useCallback(() => {
-    setEditor((prev) => ({
-      ...prev,
-      route: { ...prev.route, models: [...(prev.route.models ?? []), ''] },
-      modelUids: [...prev.modelUids, nextModelUid()],
-      error: '',
-    }));
-  }, []);
+    setEditor((prev) => {
+      const selected = new Set(
+        (prev.route.models ?? []).map((model) => model.trim().toLowerCase())
+      );
+      const nextOption = modelTargetOptions.find(
+        (option) => !selected.has(option.value.toLowerCase())
+      );
+      if (!nextOption) {
+        return {
+          ...prev,
+          error:
+            modelTargetOptions.length === 0
+              ? t('model_routes.error_no_provider_models')
+              : t('model_routes.error_all_models_selected'),
+        };
+      }
+      return {
+        ...prev,
+        route: { ...prev.route, models: [...(prev.route.models ?? []), nextOption.value] },
+        modelUids: [...prev.modelUids, nextModelUid()],
+        error: '',
+      };
+    });
+  }, [modelTargetOptions, t]);
 
   const updateModelEntry = useCallback((index: number, value: string) => {
     setEditor((prev) => {
@@ -305,7 +403,11 @@ export function ModelRoutesPage() {
       </div>
 
       <div className={styles.toolbar}>
-        <Button variant="secondary" onClick={load} disabled={loading || editor.saving}>
+        <Button
+          variant="secondary"
+          onClick={refreshAll}
+          disabled={loading || providerModelsFetching || editor.saving}
+        >
           {iconText(<IconRefreshCw size={14} />, t('common.refresh'))}
         </Button>
         <Button variant="primary" onClick={openCreate} disabled={disabled || loading}>
@@ -455,18 +557,32 @@ export function ModelRoutesPage() {
                 <div className={styles.fieldLabel}>{t('model_routes.field_models')}</div>
                 <div className={styles.fieldHint}>{t('model_routes.field_models_hint')}</div>
               </div>
-              <Button variant="secondary" size="sm" onClick={addModelEntry}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={addModelEntry}
+                disabled={!hasAvailableModelTargetOption}
+              >
                 {iconText(<IconPlus size={13} />, t('model_routes.add_model'))}
               </Button>
             </div>
+            {providerModelsFetching ? (
+              <div className={styles.fieldHint}>{t('model_routes.models_loading')}</div>
+            ) : modelTargetOptions.length === 0 ? (
+              <div className={styles.fieldError}>{t('model_routes.error_no_provider_models')}</div>
+            ) : !hasAvailableModelTargetOption ? (
+              <div className={styles.fieldHint}>{t('model_routes.error_all_models_selected')}</div>
+            ) : null}
             <div className={styles.modelEntries}>
               {(editor.route.models ?? []).map((model, index) => (
                 <div key={editor.modelUids[index]} className={styles.modelEntry}>
-                  <Input
-                    aria-label={t('model_routes.model_entry_label', { index: index + 1 })}
+                  <Select
+                    ariaLabel={t('model_routes.model_entry_label', { index: index + 1 })}
                     value={model}
-                    onChange={(event) => updateModelEntry(index, event.target.value)}
+                    onChange={(value) => updateModelEntry(index, value)}
+                    options={modelTargetOptions}
                     placeholder={t('model_routes.model_placeholder')}
+                    disabled={modelTargetOptions.length === 0}
                   />
                   <Button
                     variant="ghost"
