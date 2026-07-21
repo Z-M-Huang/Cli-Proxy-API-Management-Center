@@ -29,6 +29,7 @@ import {
   IconSidebarUsage,
   IconChevronDown,
   IconFileText,
+  IconModelCluster,
 } from '@/components/ui/icons';
 import { INLINE_LOGO_JPEG } from '@/assets/logoInline';
 import {
@@ -56,6 +57,7 @@ const sidebarIcons: Record<string, ReactNode> = {
   aiProviders: <IconSidebarProviders size={18} />,
   authFiles: <IconSidebarAuthFiles size={18} />,
   oauth: <IconSidebarOauth size={18} />,
+  modelRoutes: <IconModelCluster size={18} />,
   promptRules: <IconFileText size={18} />,
   quota: <IconSidebarQuota size={18} />,
   usage: <IconSidebarUsage size={18} />,
@@ -599,6 +601,13 @@ export function MainLayout() {
           labelKey: 'nav.config_management',
           metaKey: 'nav_meta.config_management',
           icon: sidebarIcons.config,
+        },
+        {
+          // FORK[model-routes]: configured model aliases belong with gateway control.
+          path: '/model-routes',
+          labelKey: 'nav.model_routes',
+          metaKey: 'nav_meta.model_routes',
+          icon: sidebarIcons.modelRoutes,
         },
         {
           // FORK[prompt-rules]: keep request rewriting in upstream's control group.
