@@ -66,10 +66,12 @@ These are the files where the fork diverges from upstream. When syncing upstream
 - `.github/workflows/release.yml` — tag trigger is `zmh-v*` (not `v*`); `runs-on: self-hosted`.
 - `src/components/config/VisualConfigEditor.tsx`, `src/components/config/configSearchIndex.ts`, `src/hooks/useVisualConfig.ts`, `src/types/visualConfig.ts` — fork release-feed branding plus Gemini API, OpenAI-compatible, Kimi, and Antigravity header defaults.
 - `src/pages/SystemPage.tsx` — quick-link cards point at our fork (the docs link still goes to `help.router-for.me` and is intentionally labeled as upstream).
-- `src/i18n/locales/{en,zh-CN,zh-TW,ru}.json` — upstream keys plus fork navigation, `prompt_rules.*`, `usage_stats.*`, and provider-header strings.
+- `src/i18n/locales/{en,zh-CN,zh-TW,ru}.json` — upstream keys plus fork navigation, `prompt_rules.*`, `model_routes.*`, `usage_stats.*`, and provider-header strings.
+- `src/pages/ModelRoutesPage.{tsx,module.scss}` — fork-only model route management page.
 - `src/pages/PromptRulesPage.{tsx,module.scss}` — fork-only feature page.
 - `src/pages/UsagePage.{tsx,module.scss}`, `src/components/usage/**` — rollup-backed analytics, server-paged request events, and request-history UI.
 - `src/services/api/promptRules.ts` — fork-only API client.
+- `src/services/api/modelRoutes.ts` — fork-only model route API client.
 - `src/services/api/usage.ts`, `src/stores/useUsageStatsStore.ts`, `src/utils/usage/**`, `src/utils/usageIndex.ts`, `src/utils/recentRequests.ts`, `tests/usageRollups.test.ts` — usage API, state, weighted rollup aggregation, source resolution, and regression coverage.
 - `src/router/forkMainRoutes.tsx`, `src/router/MainRoutes.tsx`, `src/components/layout/MainLayout.tsx`, `src/components/ui/icons.tsx`, `src/services/api/index.ts`, `src/stores/index.ts` — isolated fork routes and minor fork-feature wiring.
 - `README.md`, `README_CN.md` — fork notice block at the top.

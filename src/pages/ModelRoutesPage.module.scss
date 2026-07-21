@@ -1,0 +1,235 @@
+@use '../styles/variables' as *;
+@use '../styles/mixins' as *;
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+}
+
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.pageTitle {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  max-width: 760px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: $spacing-sm;
+  flex-wrap: wrap;
+}
+
+.buttonContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.errorBox {
+  padding: $spacing-md;
+  color: var(--danger-color);
+  background-color: rgba($error-color, 0.1);
+  border: 1px solid var(--danger-color);
+  border-radius: $radius-md;
+  font-size: 14px;
+}
+
+.loadingLine {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.tableShell {
+  overflow: auto;
+  border: 1px solid var(--border-color);
+  border-radius: $radius-md;
+  background: var(--bg-primary);
+}
+
+.routesTable {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: collapse;
+  font-size: 13px;
+
+  th,
+  td {
+    padding: 12px;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    color: var(--text-tertiary);
+    background: var(--bg-secondary);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: 0;
+  }
+
+  tbody tr:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
+.aliasCell {
+  max-width: 220px;
+  color: var(--text-primary);
+  font-family: $font-mono;
+  font-size: 12px;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.strategyPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-full;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cooldownCell {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.modelList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-width: 520px;
+}
+
+.modelChip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 2px 8px;
+  color: var(--text-secondary);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: $radius-sm;
+  font-family: $font-mono;
+  font-size: 11px;
+  word-break: break-all;
+}
+
+.tableActions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: $spacing-xs;
+  white-space: nowrap;
+}
+
+.formStack {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: $spacing-md;
+  align-items: start;
+
+  :global(.form-group) {
+    margin-bottom: 0;
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  :global(.form-group) {
+    margin-bottom: 0;
+  }
+}
+
+.fieldHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: $spacing-sm;
+
+  @include mobile {
+    flex-direction: column;
+  }
+}
+
+.fieldLabel {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fieldHint {
+  color: var(--text-tertiary);
+  font-size: 12px;
+}
+
+.fieldError {
+  color: var(--danger-color);
+  font-size: 12px;
+}
+
+.modelEntries {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.modelEntry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: $spacing-sm;
+  align-items: center;
+
+  :global(.form-group) {
+    margin-bottom: 0;
+  }
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: $spacing-sm;
+}

@@ -28,6 +28,7 @@ type RequestEventRow = {
   timestamp: string;
   timestampMs: number;
   timestampLabel: string;
+  requestedModel: string;
   model: string;
   sourceRaw: string;
   source: string;
@@ -156,6 +157,7 @@ export function RequestEventsDetailsCard({
           timestamp,
           timestampMs: Number.isNaN(timestampMs) ? 0 : timestampMs,
           timestampLabel: date ? date.toLocaleString(i18n.language) : timestamp || '-',
+          requestedModel: event.requested_model?.trim() || '',
           model: event.model?.trim() || '-',
           sourceRaw: sourceRaw || '-',
           source: sourceInfo.displayName,
@@ -260,6 +262,7 @@ export function RequestEventsDetailsCard({
 
       const header = [
         'timestamp',
+        'requested_model',
         'model',
         'source',
         'source_raw',
@@ -276,6 +279,7 @@ export function RequestEventsDetailsCard({
       const body = projectedRows.map((row) =>
         [
           row.timestamp,
+          row.requestedModel,
           row.model,
           row.source,
           row.sourceRaw,
@@ -411,6 +415,7 @@ export function RequestEventsDetailsCard({
               <thead>
                 <tr>
                   <th>{t('usage_stats.request_events_timestamp')}</th>
+                  <th>{t('usage_stats.requested_model')}</th>
                   <th>{t('usage_stats.model_name')}</th>
                   <th>{t('usage_stats.request_events_source')}</th>
                   <th>{t('usage_stats.request_events_auth_index')}</th>
@@ -453,6 +458,7 @@ export function RequestEventsDetailsCard({
                       <td title={row.timestamp} className={styles.requestEventsTimestamp}>
                         {row.timestampLabel}
                       </td>
+                      <td className={styles.modelCell}>{row.requestedModel || '-'}</td>
                       <td className={styles.modelCell}>{row.model}</td>
                       <td className={styles.requestEventsSourceCell} title={row.source}>
                         <span>{row.source}</span>

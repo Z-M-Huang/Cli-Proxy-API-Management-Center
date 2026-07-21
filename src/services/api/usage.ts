@@ -31,6 +31,7 @@ export interface UsageEventRecord {
   endpoint?: string;
   auth_type?: string;
   request_id?: string;
+  requested_model?: string;
   model?: string;
   source?: string;
   auth_index?: string;

@@ -18,3 +18,5 @@ export * from './transformers';
 export * from './vertex';
 // FORK[prompt-rules]: prompt-rule CRUD is supplied by the paired backend fork.
 export * from './promptRules';
+// FORK[model-routes]: configured model routing is supplied by the paired backend fork.
+export * from './modelRoutes';

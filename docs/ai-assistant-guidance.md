@@ -92,11 +92,14 @@ Fork-owned files:
 - `CONTRIBUTING.md`
 - `docs/ai-assistant-guidance.md`
 - `README.md`, `README_CN.md`
+- `src/pages/ModelRoutesPage.tsx`
+- `src/pages/ModelRoutesPage.module.scss`
 - `src/pages/PromptRulesPage.tsx`
 - `src/pages/PromptRulesPage.module.scss`
 - `src/pages/UsagePage.tsx`
 - `src/pages/UsagePage.module.scss`
 - `src/router/forkMainRoutes.tsx`
+- `src/services/api/modelRoutes.ts`
 - `src/services/api/promptRules.ts`
 - `src/services/api/usage.ts`
 - `src/components/usage/**`
@@ -151,6 +154,7 @@ Use upstream as a source of selected fixes and maintenance, not as a contributio
 
 Current fork topics:
 
+- `model-routes`: route, page, API client, navigation wiring, and requested-model usage display.
 - `prompt-rules`: route, page, API client, and layout wiring.
 - `usage`: rollup-backed charts and credential metrics, server-paged request events, source-resolution helpers, and import/export UI.
 - `branding`: release tags, repo links, and sidebar/system-page affordances.
