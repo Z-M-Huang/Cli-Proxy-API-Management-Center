@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactElement } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
@@ -6,9 +6,17 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { IconPencil, IconPlus, IconRefreshCw, IconTrash2 } from '@/components/ui/icons';
+import { getTypeLabel } from '@/features/authFiles/constants';
+import {
+  buildModelTargetOptions,
+  collectAuthFileProviderKeys,
+  getAuthFileProviderKey,
+  type ModelTargetSource,
+} from '@/features/modelRoutes/targetOptions';
 import { useProviderWorkbench } from '@/features/providers/useProviderWorkbench';
 import type { ProviderResource } from '@/features/providers/types';
 import { useHeaderRefresh } from '@/hooks/useHeaderRefresh';
+import { authFilesApi } from '@/services/api/authFiles';
 import {
   modelRoutesApi,
   MODEL_ROUTE_STRATEGIES,
@@ -30,11 +38,6 @@ interface EditorState {
   originalAlias: string | null;
   saving: boolean;
   error: string;
-}
-
-interface ModelTargetOption {
-  value: string;
-  label: string;
 }
 
 let modelUidCounter = 0;
@@ -110,10 +113,15 @@ export function ModelRoutesPage() {
     refetch: refetchProviders,
   } = useProviderWorkbench();
   const disabled = connectionStatus !== 'connected';
+  const authFileModelsRequestRef = useRef(0);
 
   const [routes, setRoutes] = useState<ModelRoute[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [authFileModelGroups, setAuthFileModelGroups] = useState<
+    Array<{ provider: string; models: string[] }>
+  >([]);
+  const [authFileModelsFetching, setAuthFileModelsFetching] = useState(false);
   const [editor, setEditor] = useState<EditorState>({
     open: false,
     route: cloneRoute(EMPTY_ROUTE),
@@ -137,9 +145,90 @@ export function ModelRoutesPage() {
     }
   }, [t]);
 
+  const loadAuthFileModelGroups = useCallback(async () => {
+    const requestId = ++authFileModelsRequestRef.current;
+    setAuthFileModelsFetching(true);
+    try {
+      const data = await authFilesApi.list();
+      const files = data.files ?? [];
+      const providerKeys = collectAuthFileProviderKeys(files);
+      if (providerKeys.length === 0) {
+        if (requestId === authFileModelsRequestRef.current) {
+          setAuthFileModelGroups([]);
+        }
+        return;
+      }
+
+      const modelGroupsByProvider = new Map<string, Set<string>>();
+      const addModels = (provider: string, models: string[]) => {
+        const providerKey = provider.trim();
+        if (!providerKey || models.length === 0) return;
+        const group = modelGroupsByProvider.get(providerKey) ?? new Set<string>();
+        models.forEach((model) => {
+          const value = model.trim();
+          if (value) group.add(value);
+        });
+        if (group.size > 0) {
+          modelGroupsByProvider.set(providerKey, group);
+        }
+      };
+
+      const authFileResults = await Promise.allSettled(
+        files.map(async (file) => {
+          const provider = getAuthFileProviderKey(file);
+          if (!provider || !file.name) return null;
+          const models = await authFilesApi.getModelsForAuthFile(file.name);
+          return {
+            provider,
+            models: models.map((model) => model.id),
+          };
+        })
+      );
+
+      authFileResults.forEach((result) => {
+        if (result.status !== 'fulfilled' || result.value === null) return;
+        addModels(result.value.provider, result.value.models);
+      });
+
+      const fallbackProviderKeys = providerKeys.filter(
+        (provider) => !modelGroupsByProvider.has(provider)
+      );
+      const fallbackResults = await Promise.allSettled(
+        fallbackProviderKeys.map(async (provider) => {
+          const models = await authFilesApi.getModelDefinitions(provider);
+          return {
+            provider,
+            models: models.map((model) => model.id),
+          };
+        })
+      );
+
+      if (requestId !== authFileModelsRequestRef.current) return;
+
+      fallbackResults.forEach((result) => {
+        if (result.status !== 'fulfilled') return;
+        addModels(result.value.provider, result.value.models);
+      });
+
+      setAuthFileModelGroups(
+        Array.from(modelGroupsByProvider.entries())
+          .map(([provider, models]) => ({ provider, models: Array.from(models) }))
+          .sort((a, b) => a.provider.localeCompare(b.provider))
+      );
+    } catch {
+      if (requestId === authFileModelsRequestRef.current) {
+        setAuthFileModelGroups([]);
+      }
+    } finally {
+      if (requestId === authFileModelsRequestRef.current) {
+        setAuthFileModelsFetching(false);
+      }
+    }
+  }, []);
+
   const refreshAll = useCallback(async () => {
-    await Promise.all([load(), refetchProviders()]);
-  }, [load, refetchProviders]);
+    await Promise.all([load(), refetchProviders(), loadAuthFileModelGroups()]);
+  }, [load, loadAuthFileModelGroups, refetchProviders]);
 
   useHeaderRefresh(refreshAll);
   useEffect(() => {
@@ -147,6 +236,12 @@ export function ModelRoutesPage() {
       // surfaced via state.error
     });
   }, [refreshAll]);
+  useEffect(
+    () => () => {
+      authFileModelsRequestRef.current += 1;
+    },
+    []
+  );
 
   const strategyOptions = useMemo(
     () =>
@@ -163,44 +258,37 @@ export function ModelRoutesPage() {
   );
   const providerGroups = providerSnapshot?.groups;
 
-  const modelTargetOptions = useMemo<ModelTargetOption[]>(() => {
-    const providersByModel = new Map<string, { value: string; providers: Set<string> }>();
+  const modelTargetSources = useMemo<ModelTargetSource[]>(() => {
+    const sources: ModelTargetSource[] = [];
     const snapshotGroups = providerGroups ?? [];
 
     snapshotGroups.forEach((group) => {
       const fallbackBrandLabel = t(`providersPage.providerNames.${group.id}`);
       group.resources.forEach((resource) => {
         const provider = providerLabel(resource, fallbackBrandLabel, fallbackBrandLabel);
-        resource.models.forEach((model) => {
-          const value = model.trim();
-          if (!value) return;
-          const key = value.toLowerCase();
-          const entry = providersByModel.get(key) ?? { value, providers: new Set<string>() };
-          entry.providers.add(provider);
-          providersByModel.set(key, entry);
-        });
+        sources.push({ provider, models: resource.models });
       });
     });
 
-    (editor.route.models ?? []).forEach((model) => {
-      const value = model.trim();
-      if (!value) return;
-      const key = value.toLowerCase();
-      if (!providersByModel.has(key)) {
-        providersByModel.set(key, {
-          value,
-          providers: new Set([t('model_routes.saved_model_provider')]),
-        });
-      }
+    authFileModelGroups.forEach((group) => {
+      sources.push({
+        provider: getTypeLabel(t, group.provider),
+        models: group.models,
+      });
     });
 
-    return Array.from(providersByModel.values())
-      .map((entry) => ({
-        value: entry.value,
-        label: `${Array.from(entry.providers).sort().join(', ')} - ${entry.value}`,
-      }))
-      .sort((a, b) => a.label.localeCompare(b.label));
-  }, [editor.route.models, providerGroups, t]);
+    return sources;
+  }, [authFileModelGroups, providerGroups, t]);
+
+  const modelTargetOptions = useMemo(
+    () =>
+      buildModelTargetOptions(
+        modelTargetSources,
+        editor.route.models ?? [],
+        t('model_routes.saved_model_provider')
+      ),
+    [editor.route.models, modelTargetSources, t]
+  );
 
   const selectedModelKeys = useMemo(
     () =>
@@ -406,7 +494,7 @@ export function ModelRoutesPage() {
         <Button
           variant="secondary"
           onClick={refreshAll}
-          disabled={loading || providerModelsFetching || editor.saving}
+          disabled={loading || providerModelsFetching || authFileModelsFetching || editor.saving}
         >
           {iconText(<IconRefreshCw size={14} />, t('common.refresh'))}
         </Button>
@@ -566,7 +654,7 @@ export function ModelRoutesPage() {
                 {iconText(<IconPlus size={13} />, t('model_routes.add_model'))}
               </Button>
             </div>
-            {providerModelsFetching ? (
+            {providerModelsFetching || authFileModelsFetching ? (
               <div className={styles.fieldHint}>{t('model_routes.models_loading')}</div>
             ) : modelTargetOptions.length === 0 ? (
               <div className={styles.fieldError}>{t('model_routes.error_no_provider_models')}</div>
